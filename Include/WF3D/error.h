@@ -1,0 +1,15 @@
+#ifndef WF3D_ERROR_H_INCLUDED
+#define WF3D_ERROR_H_INCLUDED
+
+typedef enum
+{
+    WF3D_SUCCESS,
+
+    WF3D_MEMORY_ERROR,
+    WF3D_IMAGE_ACCESS_ERROR,
+
+    WF3D_INVALID_PARAMETER
+
+} wf3d_error;
+
+#endif // WF3D_ERROR_H_INCLUDED
