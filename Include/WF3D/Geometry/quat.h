@@ -20,6 +20,12 @@ static inline wf3d_quat wf3d_quat_set(float w, float x, float y, float z)
     return _mm_set_ps(z, y, x, w);
 }
 
+//q = w
+static inline wf3d_quat wf3d_quat_from_real(float w)
+{
+    return _mm_set_ss(w);
+}
+
 //Load quaternion
 static inline wf3d_quat wf3d_quat_load4(float const* src)
 {

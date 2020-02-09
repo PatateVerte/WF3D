@@ -1,16 +1,21 @@
 #ifndef WF3D_CAMERA3D_H_INCLUDED
 #define WF3D_CAMERA3D_H_INCLUDED
 
+#include <stdbool.h>
+
 #include <WF3D/error.h>
 
 #include <WF3D/Geometry/vect3d.h>
 #include <WF3D/Geometry/quat.h>
 #include <WF3D/Geometry/matrix3x3.h>
 
+#include <WF3D/Rendering/object3d.h>
+#include <WF3D/Rendering/Design/image_gen_interface.h>
+
 typedef struct
 {
     wf3d_quat q_rot; //|q_rot| = 1
-    wf3d_vect3d position;
+    wf3d_vect3d v_pos;
 
     float render_distance;
     bool blackface_culling_enabled;
