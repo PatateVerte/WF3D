@@ -5,7 +5,9 @@
 
 #include <WF3D/error.h>
 #include <WF3D/Geometry/vect3d.h>
+#include <WF3D/Rendering/camera3d.h>
 #include <WF3D/Rendering/triangle3d.h>
+#include <WF3D/Rendering/lightsource.h>
 
 typedef struct
 {
@@ -41,7 +43,7 @@ wf3d_Object3d* wf3d_Object3d_Transform(wf3d_Object3d* obj, wf3d_quat q_rot, wf3d
 
 //Rasterization function
 //
-wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d cam_pos, wf3d_quat cam_rot, float tan_h_half_opening_angle, float tan_v_half_opening_angle, float render_distance, bool blackface_culling_enabled);
+wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_camera3d const* cam, wf3d_lightsource const* ls_list, int nb_ls);
 
 
 #endif // WF3D_OBJECT3D_H_INCLUDED

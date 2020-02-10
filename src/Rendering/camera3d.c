@@ -6,8 +6,8 @@
 wf3d_camera3d* wf3d_camera3d_Set(wf3d_camera3d* cam, float render_distance, float h_opening_angle, float v_opening_angle, bool blackface_culling_enabled)
 {
     cam->render_distance = render_distance;
-    cam->h_opening_angle = h_opening_angle;
-    cam->v_opening_angle = v_opening_angle;
+    cam->tan_h_half_opening_angle = tanf(0.5f * h_opening_angle);
+    cam->tan_v_half_opening_angle = tanf(0.5f * v_opening_angle);
     cam->blackface_culling_enabled = blackface_culling_enabled;
 
     cam->q_rot = wf3d_quat_from_real(1.0f);
@@ -19,7 +19,7 @@ wf3d_camera3d* wf3d_camera3d_Set(wf3d_camera3d* cam, float render_distance, floa
 //
 //
 //
-wf3d_error wf3d_camera3d_Rasterization(wf3d_camera3d* cam, wf3d_img_gen_interface* img_out, float* z_buffer, wf3d_Object3d const** scene, size_t nb_objects)
+/*wf3d_error wf3d_camera3d_Rasterization(wf3d_camera3d* cam, wf3d_img_gen_interface* img_out, float* z_buffer, wf3d_Object3d const** scene, size_t nb_objects)
 {
     wf3d_error error = WF3D_SUCCESS;
 
@@ -35,4 +35,4 @@ wf3d_error wf3d_camera3d_Rasterization(wf3d_camera3d* cam, wf3d_img_gen_interfac
     }
 
     return error;
-}
+}*/
