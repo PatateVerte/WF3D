@@ -11,22 +11,19 @@ typedef struct
     //Light color
     float light_color[4];
 
-    //Intensity when r = 1.0
-    float I_0;
+    //
+    float R0;
 
-    //Min intensity
-    float I_min;
+    //Intensity when r = 0.0
+    float L_0;
 
-    //Max intensity
-    float I_max;
+    //Intensity when r = +inf
+    float L_inf;
 
 } wf3d_lightsource;
 
 //Advanced set up
-wf3d_lightsource* wf3d_lightsource_set(wf3d_lightsource* ls, wf3d_vect3d v_pos, float const* light_color, float I_0, float I_min, float I_max);
-
-//Small set up
-wf3d_lightsource* wf3d_lightsource_set1(wf3d_lightsource* ls, wf3d_vect3d v_pos, float I_0);
+wf3d_lightsource* wf3d_lightsource_set(wf3d_lightsource* ls, wf3d_vect3d v_pos, float const* light_color, float R0, float L_0, float L_inf);
 
 //
 float* wf3d_lightsource_getlightfilter(float* filter_ret, wf3d_vect3d M, wf3d_vect3d n, wf3d_lightsource const* ls_list, int nb_ls);

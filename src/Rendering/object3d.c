@@ -137,7 +137,6 @@ wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_in
     {
         wf3d_triangle3d const* local_face = obj->local_face_list + fi;
 
-        //Lightfilters
         float screen_coords[3][4] __attribute__( (aligned(16)) );
         float y_min_f = 2.0f * half_height;
         float y_max_f = 0.0;
@@ -147,10 +146,11 @@ wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_in
             wf3d_vect3d_store4(
                                 screen_coords[i],
                                 wf3d_vect3d_add(
-                                                    wf3d_quat_transform_vect3d(q_inv, local_face->vertex_list[i]),
-                                                    v_inv
-                                                )
-                                );
+                                                wf3d_quat_transform_vect3d(q_inv, local_face->vertex_list[i]),
+                                                v_inv
+                                               )
+                              );
+
             float tmp = -1.0f / screen_coords[i][3];
             screen_coords[i][1] = screen_coords[i][1] * tmp * x_scale + half_width;
             screen_coords[i][2] = screen_coords[i][2] * tmp * y_scale + half_height;
@@ -175,13 +175,15 @@ wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_in
 
         if(ls_list != NULL)
         {
+            wf3d_vect3d face_normal = wf3d_quat_transform_vect3d(obj->q_rot, local_face->normal);
+
             for(int fi = 0 ; fi < 3 ; fi++)
             {
                 wf3d_vect3d vertex_pos = wf3d_vect3d_add(
                                                             wf3d_quat_transform_vect3d(obj->q_rot, local_face->vertex_list[fi]),
                                                             obj->v_pos
                                                          );
-                wf3d_lightsource_getlightfilter(vertex_light_filter[fi], vertex_pos, local_face->normal, ls_list, nb_ls);
+                wf3d_lightsource_getlightfilter(vertex_light_filter[fi], vertex_pos, face_normal, ls_list, nb_ls);
             }
         }
         else
