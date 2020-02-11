@@ -1,4 +1,4 @@
-#include <WF3D/Rendering/object3d.h>
+#include <WF3D/Rendering/Object/polygon_mesh.h>
 
 #include <math.h>
 #include <malloc.h>
@@ -7,9 +7,9 @@
 //
 //
 //
-wf3d_Object3d* wf3d_Object3d_Create(int nb_faces)
+wf3d_PolygonMesh* wf3d_PolygonMesh_Create(int nb_faces)
 {
-    wf3d_Object3d* obj = NULL;
+    wf3d_PolygonMesh* obj = NULL;
     bool error = false;
 
     obj = malloc(sizeof(*obj));
@@ -43,7 +43,7 @@ wf3d_Object3d* wf3d_Object3d_Create(int nb_faces)
 
     if(error)
     {
-        wf3d_Object3d_Destroy(obj);
+        wf3d_PolygonMesh_Destroy(obj);
         obj = NULL;
     }
 
@@ -53,7 +53,7 @@ wf3d_Object3d* wf3d_Object3d_Create(int nb_faces)
 //
 //
 //
-void wf3d_Object3d_Destroy(wf3d_Object3d* obj)
+void wf3d_PolygonMesh_Destroy(wf3d_PolygonMesh* obj)
 {
     if(obj != NULL)
     {
@@ -65,7 +65,7 @@ void wf3d_Object3d_Destroy(wf3d_Object3d* obj)
 //
 //
 //
-wf3d_triangle3d const* wf3d_Object3d_ChangeFace(wf3d_Object3d* obj, int i, wf3d_triangle3d const* new_face)
+wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i, wf3d_triangle3d const* new_face)
 {
     if(i >= 0 && i < obj->nb_faces)
     {
@@ -83,7 +83,7 @@ wf3d_triangle3d const* wf3d_Object3d_ChangeFace(wf3d_Object3d* obj, int i, wf3d_
 //
 //
 //
-wf3d_triangle3d const* wf3d_Object3d_GetLocalFacePtr(wf3d_Object3d const* obj, int i)
+wf3d_triangle3d const* wf3d_PolygonMesh_GetLocalFacePtr(wf3d_PolygonMesh const* obj, int i)
 {
     if(i < obj->nb_faces && i >= 0)
     {
@@ -99,20 +99,20 @@ wf3d_triangle3d const* wf3d_Object3d_GetLocalFacePtr(wf3d_Object3d const* obj, i
 //
 //
 //
-//wf3d_Object3d* wf3d_Object3d_Move(wf3d_Object3d* obj, wf3d_vect3d v);
+//wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v);
 
 //
-wf3d_Object3d* wf3d_Object3d_Transform(wf3d_Object3d* obj, wf3d_quat q_rot, wf3d_quat v)
+wf3d_PolygonMesh* wf3d_PolygonMesh_Transform(wf3d_PolygonMesh* obj, wf3d_quat q_rot, wf3d_quat v)
 {
     obj->q_rot = wf3d_quat_mul(obj->q_rot, q_rot);
     obj->v_pos = wf3d_quat_transform_vect3d(q_rot, obj->v_pos);
-    return wf3d_Object3d_Move(obj, v);
+    return wf3d_PolygonMesh_Move(obj, v);
 }
 
 //
 //
 //
-wf3d_error wf3d_Object3d_Rasterization(wf3d_Object3d const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_camera3d const* cam, wf3d_lightsource const* ls_list, int nb_ls)
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_camera3d const* cam, wf3d_lightsource const* ls_list, int nb_ls)
 {
     wf3d_error error = WF3D_SUCCESS;
 

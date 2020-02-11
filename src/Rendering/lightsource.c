@@ -31,7 +31,7 @@ float* wf3d_lightsource_getlightfilter(float* filter_ret, wf3d_vect3d M, wf3d_ve
         wf3d_vect3d u = wf3d_vect3d_normalize(v);
 
         float const R0_2 = ls_list[k].R0 * ls_list[k].R0;
-        float L = ls_list[k].L_0 * R0_2 / (ls_list[k].R0 * ls_list[k].R0 + wf3d_vect3d_dot(v, v));
+        float L = ls_list[k].L_0 * R0_2 / (R0_2 + wf3d_vect3d_dot(v, v));
         L *= 0.5f * (wf3d_vect3d_dot(u, n) + 1.0f);
         L = (L + ls_list[k].L_inf) / (ls_list[k].L_0 + ls_list[k].L_inf);
 
