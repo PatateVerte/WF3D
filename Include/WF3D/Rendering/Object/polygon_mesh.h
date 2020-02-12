@@ -14,6 +14,9 @@ typedef struct
     wf3d_quat q_rot;
     wf3d_vect3d v_pos;
 
+    bool radius_has_changed;
+    float radius;
+
     int nb_faces;
     wf3d_triangle3d* local_face_list;   //Coordinates are relative to the global positioning
 
@@ -25,21 +28,20 @@ wf3d_PolygonMesh* wf3d_PolygonMesh_Create(int nb_faces);
 //
 void wf3d_PolygonMesh_Destroy(wf3d_PolygonMesh* obj);
 
-//Constant pointer to a face
-wf3d_triangle3d const* wf3d_PolygonMesh_GetLocalFacePtr(wf3d_PolygonMesh const* obj, int i);
-
-//Edit a face
+//Copy the face to the face i
 wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i, wf3d_triangle3d const* new_face);
 
 //
-static inline wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v)
-{
-    obj->v_pos = wf3d_vect3d_add(obj->v_pos, v);
-    return obj;
-}
+wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v);
 
 //
 wf3d_PolygonMesh* wf3d_PolygonMesh_Transform(wf3d_PolygonMesh* obj, wf3d_quat q_rot, wf3d_quat v);
+
+//
+wf3d_vect3d wf3d_PolygonMesh_Center(wf3d_PolygonMesh* obj);
+
+//
+float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj);
 
 //Rasterization function
 //

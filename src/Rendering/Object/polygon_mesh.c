@@ -21,6 +21,9 @@ wf3d_PolygonMesh* wf3d_PolygonMesh_Create(int nb_faces)
 		obj->q_rot = wf3d_quat_from_real(1.0f);
 		obj->v_pos = wf3d_vect3d_zero();
 
+		obj->radius = 0.0;
+		obj->radius_has_changed = true;
+
         if(nb_faces >= 0)
         {
             size_t face_buff_size = (size_t)nb_faces * sizeof(wf3d_triangle3d);
@@ -72,6 +75,8 @@ wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i,
         wf3d_triangle3d* local_face = obj->local_face_list + i;
         *local_face = *new_face;
 
+        obj->radius_has_changed = true;
+
         return local_face;
     }
     else
@@ -83,30 +88,59 @@ wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i,
 //
 //
 //
-wf3d_triangle3d const* wf3d_PolygonMesh_GetLocalFacePtr(wf3d_PolygonMesh const* obj, int i)
+//
+wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v)
 {
-    if(i < obj->nb_faces && i >= 0)
-    {
-        return obj->local_face_list + i;
-    }
-    else
-    {
-        return NULL;
-    }
+    obj->v_pos = wf3d_vect3d_add(obj->v_pos, v);
+    return obj;
 }
 
 //
 //
-//
-//
-//wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v);
-
 //
 wf3d_PolygonMesh* wf3d_PolygonMesh_Transform(wf3d_PolygonMesh* obj, wf3d_quat q_rot, wf3d_quat v)
 {
     obj->q_rot = wf3d_quat_mul(obj->q_rot, q_rot);
     obj->v_pos = wf3d_quat_transform_vect3d(q_rot, obj->v_pos);
     return wf3d_PolygonMesh_Move(obj, v);
+}
+
+//
+//
+//
+wf3d_vect3d wf3d_PolygonMesh_Center(wf3d_PolygonMesh* obj)
+{
+    return obj->v_pos;
+}
+
+//
+//
+//
+float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj)
+{
+    if(obj->radius_has_changed)
+    {
+        float square_radius = 0.0;
+
+        for(int fi = 0 ; fi < obj->nb_faces ; fi++)
+        {
+            for(int k = 0 ; k < 3 ; k++)
+            {
+                wf3d_vect3d vertex = obj->local_face_list[fi].vertex_list[k];
+                float tmp = wf3d_vect3d_dot(vertex, vertex);
+                square_radius = fmaxf(square_radius, tmp);
+            }
+        }
+
+        float radius = sqrtf(square_radius);
+        obj->radius = radius;
+        obj->radius_has_changed = false;
+        return radius;
+    }
+    else
+    {
+        return obj->radius;
+    }
 }
 
 //
