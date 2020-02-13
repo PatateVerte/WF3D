@@ -61,7 +61,7 @@ static inline wf3d_matrix3x3* wf3d_matrix3x3_copy(wf3d_matrix3x3* M, wf3d_matrix
 }
 
 //det(A)
-static inline float wf3d_matrix3x3_set(wf3d_matrix3x3 const* A)
+static inline float wf3d_matrix3x3_det(wf3d_matrix3x3 const* A)
 {
     return wf3d_vect3d_triple(A->column[0], A->column[1], A->column[2]);
 }

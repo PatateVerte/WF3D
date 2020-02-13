@@ -11,9 +11,6 @@
 
 typedef struct
 {
-    wf3d_quat q_rot;
-    wf3d_vect3d v_pos;
-
     bool radius_has_changed;
     float radius;
 
@@ -32,20 +29,17 @@ void wf3d_PolygonMesh_Destroy(wf3d_PolygonMesh* obj);
 wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i, wf3d_triangle3d const* new_face);
 
 //
-wf3d_PolygonMesh* wf3d_PolygonMesh_Move(wf3d_PolygonMesh* obj, wf3d_vect3d v);
-
-//
-wf3d_PolygonMesh* wf3d_PolygonMesh_Transform(wf3d_PolygonMesh* obj, wf3d_quat q_rot, wf3d_quat v);
-
-//
-wf3d_vect3d wf3d_PolygonMesh_Center(wf3d_PolygonMesh* obj);
-
-//
 float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj);
+
+//
+float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos);
+
+//
+float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos, wf3d_quat q_rot);
 
 //Rasterization function
 //
-wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_camera3d const* cam, wf3d_lightsource const* ls_list, int nb_ls);
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam);
 
 
 #endif // WF3D_OBJECT3D_H_INCLUDED

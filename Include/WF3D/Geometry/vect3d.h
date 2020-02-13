@@ -41,6 +41,24 @@ static inline float* wf3d_vect3d_store4(float* dst, wf3d_vect3d v)
     return dst;
 }
 
+//Fill base[3] with the basic trihedral multiplied by f
+static inline wf3d_vect3d* wf3d_vect3d_base_xyz(wf3d_vect3d* base, float f)
+{
+    __m128 tmp = _mm_set_ss(f);
+    base[0] = _mm_insert_ps(tmp, tmp, 0b00010001);
+    base[1] = _mm_insert_ps(tmp, tmp, 0b00100001);
+    base[2] = _mm_insert_ps(tmp, tmp, 0b00110001);
+
+    return base;
+}
+
+//Broadcast f within a vector
+static inline wf3d_vect3d wf3d_vect3d_broadcast(float f)
+{
+    __m128 tmp = _mm_set1_ps(f);
+    return _mm_insert_ps(tmp, tmp, 0b00000001);
+}
+
 //a + b
 static inline wf3d_vect3d wf3d_vect3d_add(wf3d_vect3d a, wf3d_vect3d b)
 {
@@ -167,6 +185,38 @@ static inline float wf3d_vect3d_triple(wf3d_vect3d a, wf3d_vect3d b, wf3d_vect3d
 static inline wf3d_vect3d wf3d_vect3d_rotate_comp(wf3d_vect3d v)
 {
     return _mm_shuffle_ps(v, v, 0b10011100);
+}
+
+//Infinity norm
+static inline float wf3d_vect3d_inf_norm(wf3d_vect3d v)
+{
+    __m128 v_abs = _mm_max_ps(
+                                v,
+                                _mm_sub_ps(_mm_setzero_ps(), v)
+                              );
+
+    __m128 tmp = _mm_insert_ps(v_abs, v_abs, 0b01001110);
+    tmp = _mm_max_ss(tmp, _mm_insert_ps(v_abs, v_abs, 0b10001110));
+    tmp = _mm_max_ss(tmp, _mm_insert_ps(v_abs, v_abs, 0b11001110));
+
+    return _mm_cvtss_f32(tmp);
+}
+
+//Sign mask in int[2:0]
+//0 : < 0
+//1 : >= 0
+static inline int wf3d_vect3d_sign_mask(wf3d_vect3d v)
+{
+    __m128i tmp = _mm_castps_si128( _mm_cmpge_ps(v, _mm_setzero_ps()) );
+    tmp = _mm_packs_epi32(tmp, tmp);
+    tmp = _mm_packs_epi16(tmp, tmp);
+
+    int tmp_mask = _mm_cvtsi128_si32(tmp);
+    tmp_mask &= (1<<8) | (1<<16) | (1<<24);
+    int sign_mask = (tmp_mask>>8) | (tmp_mask >> 15) | (tmp_mask >> 22);
+    sign_mask &= 0b111;
+
+    return sign_mask;
 }
 
 #endif // WF3D_VECT3D_H_INCLUDED

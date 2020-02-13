@@ -10,12 +10,7 @@
 //
 wf3d_matrix3x3* wf3d_matrix3x3_diag(wf3d_matrix3x3* M, float diag_val)
 {
-    wf3d_vect3d base = wf3d_vect3d_set(diag_val, 0.0, 0.0);
-    for(int j = 0 ; j < 3 ; j++)
-    {
-        M->column[j] = base;
-        base = wf3d_vect3d_rotate_comp(base);
-    }
+    wf3d_vect3d_base_xyz(M->column, diag_val);
 
     return M;
 }
