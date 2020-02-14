@@ -67,6 +67,11 @@ void wf3d_PolygonMesh_Destroy(wf3d_PolygonMesh* obj)
 //
 wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i, wf3d_triangle3d const* new_face)
 {
+    if(obj == NULL)
+    {
+        return NULL;
+    }
+
     if(i >= 0 && i < obj->nb_faces)
     {
         wf3d_triangle3d* local_face = obj->local_face_list + i;
@@ -87,6 +92,11 @@ wf3d_triangle3d const* wf3d_PolygonMesh_ChangeFace(wf3d_PolygonMesh* obj, int i,
 //
 float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj)
 {
+    if(obj == NULL)
+    {
+        return 0.0;
+    }
+
     if(obj->radius_has_changed)
     {
         float square_radius = 0.0;
@@ -117,6 +127,11 @@ float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj)
 //
 float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos)
 {
+    if(obj == NULL)
+    {
+        return 0.0;
+    }
+
     float inf_radius = 0.0;
 
     for(int fi = 0 ; fi < obj->nb_faces ; fi++)
@@ -137,6 +152,11 @@ float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos)
 //
 float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos, wf3d_quat q_rot)
 {
+    if(obj == NULL)
+    {
+        return 0.0;
+    }
+
     float inf_radius = 0.0;
 
     for(int fi = 0 ; fi < obj->nb_faces ; fi++)
@@ -157,6 +177,11 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos
 //
 wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
 {
+    if(obj == NULL)
+    {
+        return WF3D_SUCCESS;
+    }
+
     wf3d_error error = WF3D_SUCCESS;
 
     wf3d_quat const cam_rot_conj = wf3d_quat_conj(cam->q_rot);
