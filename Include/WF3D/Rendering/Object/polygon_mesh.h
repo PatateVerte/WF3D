@@ -6,7 +6,7 @@
 #include <WF3D/error.h>
 #include <WF3D/Geometry/vect3d.h>
 #include <WF3D/Rendering/camera3d.h>
-#include <WF3D/Rendering/triangle3d.h>
+#include <WF3D/Rendering/Shapes/triangle3d.h>
 #include <WF3D/Rendering/lightsource.h>
 
 typedef struct

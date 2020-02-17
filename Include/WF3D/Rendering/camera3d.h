@@ -9,9 +9,6 @@
 
 typedef struct
 {
-    wf3d_quat q_rot; //|q_rot| = 1
-    wf3d_vect3d v_pos;
-
     float render_distance;
     bool blackface_culling_enabled;
 
