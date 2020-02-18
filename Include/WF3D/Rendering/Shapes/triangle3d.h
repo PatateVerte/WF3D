@@ -54,6 +54,7 @@ typedef struct
 
 typedef struct
 {
+    //vertices_barycentric_coords[vertex_i][barycentric_coord_i]
     float vertices_barycentric_coords[3][3];
 
     wf3d_color* (*original_color_of)(void*, wf3d_color*, float const*);

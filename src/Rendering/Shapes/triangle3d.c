@@ -75,198 +75,294 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
     float half_width = 0.5f * (float)img_out->width;
     float half_height = 0.5f * (float)img_out->height;
 
-    float x_scale = half_width / cam->tan_h_half_opening_angle;
-    float y_scale = half_height / cam->tan_v_half_opening_angle;
+    float const x_scale = half_width / cam->tan_h_half_opening_angle;
+    float const y_scale = half_height / cam->tan_v_half_opening_angle;
+    float const inv_x_scale = 1.0f / x_scale;
+    float const inv_y_scale = 1.0f / y_scale;
 
+    wf3d_vect3d rel_vertex[3];
+    wf3d_vect3d rel_normal = wf3d_quat_transform_vect3d(q_rot, triangle->normal);
     float vertex_coords[3][4] __attribute__( (aligned(16)) );
     float y_min_f = 2.0f * half_height;
     float y_max_f = 0.0;
 
+    float triangle_min_depth = INFINITY;
+
     //Clipping detection
     int nb_vertices_behind = 0;
-    bool is_behind[3];
+    bool vertex_is_behind[3];
 
-    for(int i = 0 ; i < 3 ; i++)
+    for(int vi = 0 ; vi < 3 ; vi++)
     {
+        rel_vertex[vi] = wf3d_vect3d_add(
+                                        wf3d_quat_transform_vect3d(q_rot, triangle->vertex_list[vi]),
+                                        v_pos
+                                       );
         //Storing
-        wf3d_vect3d_store4(
-                            vertex_coords[i],
-                            wf3d_vect3d_add(
-                                            wf3d_quat_transform_vect3d(q_rot, triangle->vertex_list[i]),
-                                            v_pos
-                                           )
-                          );
+        wf3d_vect3d_store4(vertex_coords[vi], rel_vertex[vi]);
+        float const z_vertex = vertex_coords[vi][3];
 
         //Clipping
-        if(vertex_coords[i][3] < 0.0)
+        if(z_vertex > - cam->near_clipping_distance)
         {
-            is_behind[i] = true;
+            vertex_is_behind[vi] = true;
             nb_vertices_behind += 1;
         }
         else
         {
-            is_behind[i] = false;
+            vertex_is_behind[vi] = false;
+        }
+
+        //Min depth
+        triangle_min_depth = fminf(triangle_min_depth, -z_vertex);
+    }
+
+    bool blackface_result = true;
+    if(cam->blackface_culling_enabled)
+    {
+        for(int vi = 0 ; vi < 3 && blackface_result ; vi++)
+        {
+            blackface_result = wf3d_vect3d_dot(rel_vertex[vi], rel_normal) < 0.0;
         }
     }
 
-    //If there is no need for clipping
-    if(nb_vertices_behind == 0)
+    if(blackface_result)
     {
-        float screen_coords[3][4] __attribute__( (aligned(16)) );
-
-        for(int i = 0 ; i < 3 ; i++)
+        //If there is no need for clipping
+        if(nb_vertices_behind == 0)
         {
-            float tmp = -1.0f / vertex_coords[i][3];
-            screen_coords[i][1] = vertex_coords[i][1] * tmp * x_scale + half_width;
-            screen_coords[i][2] = vertex_coords[i][2] * tmp * y_scale + half_height;
+            float screen_coords[3][2];
 
-            y_min_f = fminf(y_min_f, screen_coords[i][2]);
-            y_max_f = fmaxf(y_max_f, screen_coords[i][2]);
-        }
-
-        int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
-        if(y_min < 0)
-        {
-            y_min = 0;
-        }
-        int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
-        if(y_max > img_out->height)
-        {
-            y_max = img_out->height;
-        }
-
-        for(int y = y_min ; y < y_max && error == WF3D_SUCCESS; y++)
-        {
-            float y_f = 0.5f + (float)y;
-
-            float x_min_f = 2.0f * half_width;
-            float x_max_f = 0.0;
-            float x_min_coeff[3] = {0.0};
-            float x_max_coeff[3] = {0.0};
-            float x_min_z = -1.0f;
-            float x_max_z = -1.0f;
-            for(int i0 = 0 ; i0 < 3 ; i0++)
+            for(int i = 0 ; i < 3 ; i++)
             {
-                int i1 = (i0 + 1) % 3;
-                int i2 = (i0 + 2) % 3;
-                float t = (y_f - screen_coords[i1][2]) / (screen_coords[i0][2] - screen_coords[i1][2]);
-                if(0.0 <= t && t <= 1.0f)
+                float tmp = -1.0f / vertex_coords[i][3];
+                screen_coords[i][0] = vertex_coords[i][1] * tmp * x_scale + half_width;
+                screen_coords[i][1] = vertex_coords[i][2] * tmp * y_scale + half_height;
+
+                y_min_f = fminf(y_min_f, screen_coords[i][1]);
+                y_max_f = fmaxf(y_max_f, screen_coords[i][1]);
+            }
+
+            int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
+            if(y_min < 0)
+            {
+                y_min = 0;
+            }
+            int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
+            if(y_max > img_out->height - 1)
+            {
+                y_max = img_out->height - 1;
+            }
+
+            for(int y = y_min ; y <= y_max && error == WF3D_SUCCESS; y++)
+            {
+                float y_f = 0.5f + (float)y;
+
+                float x_min_f = 2.0f * half_width;
+                float x_max_f = 0.0;
+                for(int i0 = 0 ; i0 < 3 ; i0++)
                 {
-                    float a = t;
-                    float b = 1.0f - t;
-                    float x_f = a * screen_coords[i0][1] + b * screen_coords[i1][1];
-
-                    if(x_f < x_min_f)
+                    int i1 = (i0 + 1) % 3;
+                    float t = (y_f - screen_coords[i1][1]) / (screen_coords[i0][1] - screen_coords[i1][1]);
+                    if(0.0 <= t && t <= 1.0f)
                     {
-                        x_min_f = x_f;
-                        x_min_coeff[i0] = a;
-                        x_min_coeff[i1] = b;
-                        x_min_coeff[i2] = 0.0;
-                        x_min_z = -(a * screen_coords[i0][3] + b * screen_coords[i1][3]);
+                        float a = t;
+                        float b = 1.0f - t;
+                        float x_f = a * screen_coords[i0][0] + b * screen_coords[i1][0];
+
+                        x_min_f = fminf(x_min_f, x_f);
+                        x_max_f = fmaxf(x_max_f, x_f);
                     }
+                }
 
-                    if(x_f > x_max_f)
+                int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
+                if(x_min < 0)
+                {
+                    x_min = 0;
+                }
+                int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
+                if(x_max > img_out->width - 1)
+                {
+                    x_max = img_out->width - 1;
+                }
+
+                for(int x = x_min ; x <= x_max && error == WF3D_SUCCESS ; x++)
+                {
+                    size_t depth_buffer_index = (size_t)img_out->width * (size_t)y + (size_t)x;
+
+                    if(depth_buffer == NULL || triangle_min_depth <= depth_buffer[depth_buffer_index])
                     {
-                        x_max_f = x_f;
-                        x_max_coeff[i0] = a;
-                        x_max_coeff[i1] = b;
-                        x_max_coeff[i2] = 0.0;
-                        x_max_z = -(a * screen_coords[i0][3] + b * screen_coords[i1][3]);
+                        float x_f = 0.5f + (float)x;
+
+                        wf3d_vect3d v_intersection;
+                        {
+                            float dir_vect_coords[4] __attribute__( (aligned(16)) );
+                            dir_vect_coords[0] = 0.0;
+                            dir_vect_coords[1] = (x_f - half_width) * inv_x_scale;
+                            dir_vect_coords[2] = (y_f - half_height) * inv_y_scale;
+                            dir_vect_coords[3] = -1.0f;
+
+                            wf3d_vect3d dir_vect = wf3d_vect3d_load4(dir_vect_coords);
+
+                            float const t = wf3d_vect3d_dot(rel_vertex[0], rel_normal) / wf3d_vect3d_dot(dir_vect, rel_normal);
+                            v_intersection = wf3d_vect3d_scalar_mul(dir_vect, t);
+                        }
+
+                        size_t depth_buffer_index = (size_t)img_out->width * (size_t)y + (size_t)x;
+                        float depth = - wf3d_vect3d_get_component(v_intersection, 2);
+
+                        //Gets barycentric coordinates
+                        float barycentric_coords[3];
+                        float barycentric_sum = 0.0;
+                        for(int vi = 0 ; vi < 3 ; vi++)
+                        {
+                            int vi1 = (vi + 1) % 3;
+                            int vi2 = (vi + 2) % 3;
+                            float const tmp = wf3d_vect3d_triple(
+                                                                    wf3d_vect3d_sub(rel_vertex[vi2], rel_vertex[vi1]),
+                                                                    wf3d_vect3d_sub(v_intersection, rel_vertex[vi1]),
+                                                                    rel_normal
+                                                                 );
+                            barycentric_coords[vi] = tmp;
+                            barycentric_sum += tmp;
+                        }
+
+                        float const inv_barycentric_sum = 1.0f / barycentric_sum;
+                        for(int vi = 0 ; vi < 3 ; vi++)
+                        {
+                            barycentric_coords[vi] *= inv_barycentric_sum;
+                        }
+
+
+                        if(depth >= cam->near_clipping_distance && depth <= cam->far_clipping_distance && (depth_buffer == NULL || depth <= depth_buffer[depth_buffer_index]))
+                        {
+                            if(depth_buffer != NULL)
+                            {
+                                depth_buffer[depth_buffer_index] = depth;
+                            }
+
+                            wf3d_color final_color;
+                            triangle->color_of(triangle->design_data, &final_color, barycentric_coords);
+
+                            error = img_out->set_pixel_callback_z_buffer(img_out->img_obj, x, y, &final_color, depth);
+                        }
+                    }
+                }
+            }
+        }
+        //If there is only one vertex behind
+        else if(nb_vertices_behind == 1)
+        {
+            wf3d_triangle3d_clipped_design clipped_design[2];
+            wf3d_triangle3d clipped_triangle[2];
+
+            for(int p = 0 ; p < 2 ; p++)
+            {
+                clipped_design[p].original_color_of = triangle->color_of;
+                clipped_design[p].original_design = triangle->design_data;
+
+                clipped_triangle[p].color_of = wf3d_triangle3d_ClippedDesignCallback;
+                clipped_triangle[p].design_data = &clipped_design;
+                clipped_triangle[p].normal = rel_normal;
+
+                for(int vi = 0 ; vi < 3 ; vi++)
+                {
+                    for(int k = 0 ; k < 3 ; k++)
+                    {
+                        clipped_design[p].vertices_barycentric_coords[vi][k] = 0.0;
                     }
                 }
             }
 
-            int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
-            if(x_min < 0)
+            int vi_clipped = 0;
+            for(int vi = 0 ; vi < 3 ; vi++)
             {
-                x_min = 0;
-            }
-            int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
-            if(x_max > img_out->width)
-            {
-                x_max = img_out->width;
-            }
-
-            float inv_delta_x = 1.0f / (x_max_f - x_min_f);
-
-            for(int x = x_min ; x < x_max && error == WF3D_SUCCESS ; x++)
-            {
-                float x_f = 0.5f + (float)x;
-                float t = (x_max_f - x_f) * inv_delta_x;
-                float a = t;
-                float b = 1.0f - t;
-
-                float depth = a * x_min_z + b * x_max_z;
-                size_t depth_buffer_index = (size_t)img_out->width * (size_t)y + (size_t)x;
-
-                if(depth >= 0.0 && (depth_buffer == NULL || depth <= depth_buffer[depth_buffer_index]))
+                if(vertex_is_behind[vi])
                 {
-                    if(depth_buffer != NULL)
-                    {
-                        depth_buffer[depth_buffer_index] = depth;
-                    }
-
-                    float barycentric_coords[3];
-                    for(int i = 0 ; i < 3 ; i++)
-                    {
-                        barycentric_coords[i] = a * x_min_coeff[i] + b * x_max_coeff[i];
-                    }
-
-                    wf3d_color final_color;
-                    triangle->color_of(triangle->design_data, &final_color, barycentric_coords);
-
-                    error = img_out->set_pixel_callback_z_buffer(img_out->img_obj, x, y, &final_color, depth);
+                    vi_clipped = vi;
                 }
             }
-        }
-    }
-    //If there is only one vertex behind
-    else if(nb_vertices_behind == 1)
-    {
-        wf3d_triangle3d_clipped_design clipped_design;
-        clipped_design.original_color_of = triangle->color_of;
-        clipped_design.original_design = triangle->design_data;
 
-        wf3d_triangle3d clipped_triangle;
-        clipped_triangle.color_of = wf3d_triangle3d_ClippedDesignCallback;
-        clipped_triangle.design_data = &clipped_design;
-        clipped_triangle.normal = triangle->normal;
-
-        for(int vi = 0 ; vi < 3 ; vi++)
-        {
-            for(int k = 0 ; k < 3 ; k++)
+            for(int vk = 0 ; vk < 2 ; vk++)
             {
-                clipped_design.vertices_barycentric_coords[vi][k] = 0.0;
+                int vi = (vi_clipped + 1 + vk) % 3;
+
+                for(int p = 0 ; p < 2 ; p++)
+                {
+                    clipped_triangle[p].vertex_list[vi] = rel_vertex[vi];
+                    clipped_design[p].vertices_barycentric_coords[vi][vi] = 1.0f;
+                }
+
+                float const t = (vertex_coords[vi_clipped][3] + cam->near_clipping_distance) / (vertex_coords[vi_clipped][3] - vertex_coords[vi][3]);
+                wf3d_vect3d clipped_vertex = wf3d_vect3d_add(
+                                                                wf3d_vect3d_scalar_mul(rel_vertex[vi], t),
+                                                                wf3d_vect3d_scalar_mul(rel_vertex[vi_clipped], 1.0f - t)
+                                                             );
+                clipped_triangle[vk].vertex_list[vi_clipped] = wf3d_vect3d_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
+                clipped_design[vk].vertices_barycentric_coords[vi_clipped][vi] = t;
+                clipped_design[vk].vertices_barycentric_coords[vi_clipped][vi_clipped] = 1.0f - t;
             }
 
-            if(is_behind[vi])
+            wf3d_vect3d const clipped_v_pos = wf3d_vect3d_zero();
+            wf3d_vect3d const clipped_q_rot = wf3d_quat_from_real(1.0f);
+            for(int p = 0 ; p < 2 ; p++)
             {
-                for(int k = 0 ; k < 2 ; k++)
+                wf3d_triangle3d_Rasterization(clipped_triangle + p, img_out, depth_buffer, clipped_v_pos, clipped_q_rot, cam);
+            }
+        }
+        //If there are 2 vertices behind
+        else if(nb_vertices_behind == 2)
+        {
+            wf3d_triangle3d_clipped_design clipped_design;
+            clipped_design.original_color_of = triangle->color_of;
+            clipped_design.original_design = triangle->design_data;
+
+            wf3d_triangle3d clipped_triangle;
+            clipped_triangle.color_of = wf3d_triangle3d_ClippedDesignCallback;
+            clipped_triangle.design_data = &clipped_design;
+            clipped_triangle.normal = rel_normal;
+
+            for(int vi = 0 ; vi < 3 ; vi++)
+            {
+                for(int k = 0 ; k < 3 ; k++)
                 {
-                    int vk = (vi + 1 + k) % 3;
+                    clipped_design.vertices_barycentric_coords[vi][k] = 0.0;
+                }
+            }
 
-                    float new_vertex_coords[4] __attribute__( (aligned(16)) );
-                    //wf3d_vect3d_store4(new_vertex_coords, triangle->vertex_list[vk]);
+            int vi_unclipped = 0;
+            for(int vi = 0 ; vi < 3 ; vi++)
+            {
+                if(!vertex_is_behind[vi])
+                {
+                    vi_unclipped = vi;
+                }
+            }
 
-                    float const t = (vertex_coords[vk][3]) / (vertex_coords[vk][3] - vertex_coords[vi][3]);
-                    clipped_triangle.vertex_list[vi] = wf3d_vect3d_add(
-                                                                        wf3d_vect3d_scalar_mul(triangle->vertex_list[vi], t),
-                                                                        wf3d_vect3d_scalar_mul(triangle->vertex_list[vk], 1.0f - t)
-                                                                      );
+            for(int vi = 0 ; vi < 3 ; vi++)
+            {
+                if(vertex_is_behind[vi])
+                {
+                    float const t = - (vertex_coords[vi_unclipped][3] + cam->near_clipping_distance) / (vertex_coords[vi][3] - vertex_coords[vi_unclipped][3]);
+                    wf3d_vect3d clipped_vertex = wf3d_vect3d_add(
+                                                                    wf3d_vect3d_scalar_mul(rel_vertex[vi], t),
+                                                                    wf3d_vect3d_scalar_mul(rel_vertex[vi_unclipped], 1.0f - t)
+                                                                );
+                    clipped_triangle.vertex_list[vi] = wf3d_vect3d_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
                     clipped_design.vertices_barycentric_coords[vi][vi] = t;
-                    clipped_design.vertices_barycentric_coords[vi][vk] = 1.0f - t;
+                    clipped_design.vertices_barycentric_coords[vi][vi_unclipped] = 1.0f - t;
+                }
+                else
+                {
+                    clipped_triangle.vertex_list[vi] = rel_vertex[vi];
+                    clipped_design.vertices_barycentric_coords[vi][vi] = 1.0f;
                 }
             }
-            else
-            {
-                clipped_triangle.vertex_list[vi] = triangle->vertex_list[vi];
-                clipped_design.vertices_barycentric_coords[vi][vi] = 1.0;
-            }
-        }
 
-        wf3d_vect3d const clipped_v_pos = wf3d_vect3d_zero();
-        wf3d_vect3d const clipped_q_rot = wf3d_quat_from_real(1.0f);
-        error = wf3d_triangle3d_Rasterization(&clipped_triangle, img_out, depth_buffer, clipped_v_pos, clipped_q_rot, cam);
+            wf3d_vect3d const clipped_v_pos = wf3d_vect3d_zero();
+            wf3d_vect3d const clipped_q_rot = wf3d_quat_from_real(1.0f);
+            error = wf3d_triangle3d_Rasterization(&clipped_triangle, img_out, depth_buffer, clipped_v_pos, clipped_q_rot, cam);
+        }
     }
 
     return error;

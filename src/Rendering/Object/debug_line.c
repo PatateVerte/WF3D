@@ -59,7 +59,9 @@ float wf3d_DebugLine_InfRadiusWithRot(wf3d_DebugLine* line, wf3d_vect3d v_pos, w
 //
 wf3d_error wf3d_DebugLine_Rasterization(wf3d_DebugLine const* line, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
 {
-    if(line == NULL)
+    return WF3D_SUCCESS;
+
+    /*if(line == NULL)
     {
         return WF3D_SUCCESS;
     }
@@ -160,6 +162,6 @@ wf3d_error wf3d_DebugLine_Rasterization(wf3d_DebugLine const* line, wf3d_img_gen
         }
     }
 
-    return error;
+    return error;*/
 }
 

@@ -72,37 +72,12 @@ static inline wf3d_vect3d wf3d_vect3d_sub(wf3d_vect3d a, wf3d_vect3d b)
 }
 
 //
-static inline wf3d_vect3d wf3d_vect3d_unsafe_set_component(wf3d_vect3d v, int i, float val)
-{
-    float tmp[4] __attribute__((aligned(16)));
-    _mm_store_ps(tmp, v);
-    tmp[i + 1] = val;
-    return _mm_load_ps(tmp);
-}
+#define wf3d_vect3d_set_component(v, i, val) \
+    _mm_insert_ps( (v) , _mm_set_ss((val)) , (0b0001 | (0b00 << 6) | ((i + 1) << 4)) )
 
-//
-static inline float wf3d_vect3d_unsafe_get_component(wf3d_vect3d v, int i)
-{
-    float tmp[4] __attribute__((aligned(16))) ;
-    _mm_store_ps(tmp, v);
-    return tmp[i + 1];
-}
 
-//
-static inline float wf3d_vect3d_get_component(wf3d_vect3d v, int i)
-{
-    float tmp[4] __attribute__((aligned(16))) ;
-    _mm_store_ps(tmp, v);
-
-    if(i < 4 && i >= 0)
-    {
-        return tmp[i + 1];
-    }
-    else
-    {
-        return NAN;
-    }
-}
+#define wf3d_vect3d_get_component(v, i) \
+    _mm_cvtss_f32( _mm_insert_ps((v) , (v) , (0b1110 | ((i + 1) << 6) | (0b00 << 4)) ) )
 
 //a * v
 static inline wf3d_vect3d wf3d_vect3d_scalar_mul(wf3d_vect3d v, float a)
