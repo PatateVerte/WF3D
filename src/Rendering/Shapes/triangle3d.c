@@ -81,8 +81,11 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
     float const inv_y_scale = 1.0f / y_scale;
 
     wf3d_vect3d rel_vertex[3];
-    wf3d_vect3d rel_normal = wf3d_quat_transform_vect3d(q_rot, triangle->normal);
     float vertex_coords[3][4] __attribute__( (aligned(16)) );
+
+    wf3d_vect3d opp_size_cross_normal[3];
+    wf3d_vect3d rel_normal = wf3d_quat_transform_vect3d(q_rot, triangle->normal);
+
     float y_min_f = 2.0f * half_height;
     float y_max_f = 0.0;
 
@@ -115,6 +118,16 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
 
         //Min depth
         triangle_min_depth = fminf(triangle_min_depth, -z_vertex);
+    }
+
+    for(int vi = 0 ; vi < 3 ; vi++)
+    {
+        int const vi1 = (vi + 1) % 3;
+        int const vi2 = (vi + 2) % 3;
+        opp_size_cross_normal[vi] = wf3d_vect3d_cross(
+                                                        rel_normal,
+                                                        wf3d_vect3d_sub(rel_vertex[vi2], rel_vertex[vi1])
+                                                      );
     }
 
     bool blackface_result = true;
@@ -216,12 +229,10 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
                         float barycentric_sum = 0.0;
                         for(int vi = 0 ; vi < 3 ; vi++)
                         {
-                            int vi1 = (vi + 1) % 3;
-                            int vi2 = (vi + 2) % 3;
-                            float const tmp = wf3d_vect3d_triple(
-                                                                    wf3d_vect3d_sub(rel_vertex[vi2], rel_vertex[vi1]),
-                                                                    wf3d_vect3d_sub(v_intersection, rel_vertex[vi1]),
-                                                                    rel_normal
+                            int const vi1 = (vi + 1) % 3;
+                            float const tmp = wf3d_vect3d_dot(
+                                                                    opp_size_cross_normal[vi],
+                                                                    wf3d_vect3d_sub(v_intersection, rel_vertex[vi1])
                                                                  );
                             barycentric_coords[vi] = tmp;
                             barycentric_sum += tmp;
