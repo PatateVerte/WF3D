@@ -45,9 +45,9 @@ static inline float* wf3d_vect3d_store4(float* dst, wf3d_vect3d v)
 static inline wf3d_vect3d* wf3d_vect3d_base_xyz(wf3d_vect3d* base, float f)
 {
     __m128 tmp = _mm_set_ss(f);
-    base[0] = _mm_insert_ps(tmp, tmp, 0b00010001);
-    base[1] = _mm_insert_ps(tmp, tmp, 0b00100001);
-    base[2] = _mm_insert_ps(tmp, tmp, 0b00110001);
+    base[0] = _mm_insert_ps(tmp, tmp, 0b00011101);
+    base[1] = _mm_insert_ps(tmp, tmp, 0b00101011);
+    base[2] = _mm_insert_ps(tmp, tmp, 0b00110111);
 
     return base;
 }

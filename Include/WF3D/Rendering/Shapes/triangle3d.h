@@ -18,10 +18,16 @@ typedef struct
     wf3d_vect3d normal;
 
     //wf3d_color* color_of(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
-    wf3d_color* (*color_of)(void*, wf3d_color*, float const*);
-    void* design_data;
+    wf3d_color* (*color_of)(void const*, wf3d_color*, float const*);
+    void const* design_data;
 
 } wf3d_triangle3d;
+
+wf3d_triangle3d* wf3d_triangle3d_Set(
+                                        wf3d_triangle3d* triangle, wf3d_vect3d* vertex_list, wf3d_vect3d normal,
+                                        wf3d_color* (*color_of)(void const*, wf3d_color*, float const*),
+                                        void const* design_data
+                                     );
 
 static inline wf3d_triangle3d* wf3d_triangle3d_CopyDesign(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src)
 {
@@ -57,18 +63,18 @@ typedef struct
     //vertices_barycentric_coords[vertex_i][barycentric_coord_i]
     float vertices_barycentric_coords[3][3];
 
-    wf3d_color* (*original_color_of)(void*, wf3d_color*, float const*);
-    void* original_design;
+    wf3d_color* (*original_color_of)(void const*, wf3d_color*, float const*);
+    void const* original_design;
 
 } wf3d_triangle3d_clipped_design;
 
 //design_data_ptr : wf3d_color*
-wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
+wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
 
 //design_data_ptr : wf3d_triangle3d_tricolor_design*
-wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
+wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
 
 //design_data_ptr : wf3d_triangle3d_clipped_design*
-wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
+wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords);
 
 #endif // WF3D_TRIANGLE_H_INCLUDED

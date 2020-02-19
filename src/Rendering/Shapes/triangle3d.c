@@ -3,6 +3,33 @@
 //
 //
 //
+wf3d_triangle3d* wf3d_triangle3d_Set(
+                                        wf3d_triangle3d* triangle, wf3d_vect3d* vertex_list, wf3d_vect3d normal,
+                                        wf3d_color* (*color_of)(void const*, wf3d_color*, float const*),
+                                        void const* design_data
+                                     )
+{
+    if(triangle == NULL)
+    {
+        return NULL;
+    }
+
+    for(int k = 0 ; k < 3 ; k++)
+    {
+        triangle->vertex_list[k] = vertex_list[k];
+    }
+
+    triangle->normal = normal;
+
+    triangle->color_of = color_of;
+    triangle->design_data = design_data;
+
+    return triangle;
+}
+
+//
+//
+//
 wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle)
 {
     wf3d_vect3d v1 = triangle->vertex_list[1] - triangle->vertex_list[0];
@@ -390,14 +417,14 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
 //design_data_ptr : wf3d_color*
 //
 //
-wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
 {
     if(design_data_ptr == NULL)
     {
         return NULL;
     }
 
-    wf3d_color* design_data = design_data_ptr;
+    wf3d_color const* design_data = design_data_ptr;
     *color_ret = *design_data;
 
     return color_ret;
@@ -406,7 +433,7 @@ wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void* design_data_ptr, wf3d
 //design_data_ptr : wf3d_triangle3d_tricolor_design*
 //
 //
-wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
 {
     if(design_data_ptr == NULL)
     {
@@ -423,7 +450,7 @@ wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void* design_data_ptr, wf3d_
 //design_data_ptr : wf3d_triangle3d_clipped_design*
 //
 //
-wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
 {
     if(design_data_ptr == NULL)
     {
