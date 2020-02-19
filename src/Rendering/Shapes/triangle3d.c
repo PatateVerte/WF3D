@@ -221,32 +221,31 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
                             v_intersection = wf3d_vect3d_scalar_mul(dir_vect, t);
                         }
 
-                        size_t depth_buffer_index = (size_t)img_out->width * (size_t)y + (size_t)x;
                         float depth = - wf3d_vect3d_get_component(v_intersection, 2);
 
-                        //Gets barycentric coordinates
-                        float barycentric_coords[3];
-                        float barycentric_sum = 0.0;
-                        for(int vi = 0 ; vi < 3 ; vi++)
+                        if(depth <= cam->far_clipping_distance && (depth_buffer == NULL || depth <= depth_buffer[depth_buffer_index]))
                         {
-                            int const vi1 = (vi + 1) % 3;
-                            float const tmp = wf3d_vect3d_dot(
+                            //Gets barycentric coordinates
+                            float barycentric_coords[3];
+                            float barycentric_sum = 0.0;
+                            for(int vi = 0 ; vi < 3 ; vi++)
+                            {
+                                int const vi1 = (vi + 1) % 3;
+                                float const tmp = wf3d_vect3d_dot(
                                                                     opp_size_cross_normal[vi],
                                                                     wf3d_vect3d_sub(v_intersection, rel_vertex[vi1])
                                                                  );
-                            barycentric_coords[vi] = tmp;
-                            barycentric_sum += tmp;
-                        }
+                                barycentric_coords[vi] = tmp;
+                                barycentric_sum += tmp;
+                            }
 
-                        float const inv_barycentric_sum = 1.0f / barycentric_sum;
-                        for(int vi = 0 ; vi < 3 ; vi++)
-                        {
-                            barycentric_coords[vi] *= inv_barycentric_sum;
-                        }
+                            float const inv_barycentric_sum = 1.0f / barycentric_sum;
+                            for(int vi = 0 ; vi < 3 ; vi++)
+                            {
+                                barycentric_coords[vi] *= inv_barycentric_sum;
+                            }
 
 
-                        if(depth >= cam->near_clipping_distance && depth <= cam->far_clipping_distance && (depth_buffer == NULL || depth <= depth_buffer[depth_buffer_index]))
-                        {
                             if(depth_buffer != NULL)
                             {
                                 depth_buffer[depth_buffer_index] = depth;
@@ -296,22 +295,31 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_i
 
             for(int vk = 0 ; vk < 2 ; vk++)
             {
-                int vi = (vi_clipped + 1 + vk) % 3;
-
-                for(int p = 0 ; p < 2 ; p++)
-                {
-                    clipped_triangle[p].vertex_list[vi] = rel_vertex[vi];
-                    clipped_design[p].vertices_barycentric_coords[vi][vi] = 1.0f;
-                }
+                int const vi_minus_one = (vi_clipped + vk) % 3;
+                int const vi = (vi_clipped + 1 + vk) % 3;
 
                 float const t = (vertex_coords[vi_clipped][3] + cam->near_clipping_distance) / (vertex_coords[vi_clipped][3] - vertex_coords[vi][3]);
                 wf3d_vect3d clipped_vertex = wf3d_vect3d_add(
                                                                 wf3d_vect3d_scalar_mul(rel_vertex[vi], t),
                                                                 wf3d_vect3d_scalar_mul(rel_vertex[vi_clipped], 1.0f - t)
                                                              );
-                clipped_triangle[vk].vertex_list[vi_clipped] = wf3d_vect3d_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
-                clipped_design[vk].vertices_barycentric_coords[vi_clipped][vi] = t;
-                clipped_design[vk].vertices_barycentric_coords[vi_clipped][vi_clipped] = 1.0f - t;
+                clipped_vertex = wf3d_vect3d_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
+
+                for(int p = 0 ; p <= vk ; p++)
+                {
+                    //Unmoved vertices
+                    clipped_triangle[p].vertex_list[vi] = rel_vertex[vi];
+                    clipped_design[p].vertices_barycentric_coords[vi][vi] = 1.0f;
+                }
+
+                for(int p = vk ; p < 2 ; p++)
+                {
+                    //Clipped vertices
+                    clipped_triangle[p].vertex_list[vi_minus_one] = clipped_vertex;
+                    clipped_design[p].vertices_barycentric_coords[vi_minus_one][vi] = t;
+                    clipped_design[p].vertices_barycentric_coords[vi_minus_one][vi_clipped] = 1.0f - t;
+                }
+
             }
 
             wf3d_vect3d const clipped_v_pos = wf3d_vect3d_zero();
