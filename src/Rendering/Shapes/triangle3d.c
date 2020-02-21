@@ -113,9 +113,6 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
     wf3d_vect3d opp_size_cross_normal[3];
     wf3d_vect3d rel_normal = wf3d_quat_transform_vect3d(q_rot, triangle->normal);
 
-    float y_min_f = 2.0 * half_height;
-    float y_max_f = 0.0;
-
     float triangle_min_depth = INFINITY;
 
     //Clipping detection
@@ -173,108 +170,118 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
         {
             float screen_coords[3][2];
 
+            float x_gen_min_f = 2.0 * half_width;
+            float x_gen_max_f = 0.0;
+            float y_min_f = 2.0 * half_height;
+            float y_max_f = 0.0;
+
             for(int i = 0 ; i < 3 ; i++)
             {
                 float tmp = -1.0f / vertex_coords[i][3];
                 screen_coords[i][0] = vertex_coords[i][1] * tmp * x_scale + half_width;
                 screen_coords[i][1] = vertex_coords[i][2] * tmp * y_scale + half_height;
 
+                x_gen_min_f = fminf(x_gen_min_f, screen_coords[i][0]);
+                x_gen_max_f = fmaxf(x_gen_max_f, screen_coords[i][0]);
                 y_min_f = fminf(y_min_f, screen_coords[i][1]);
                 y_max_f = fmaxf(y_max_f, screen_coords[i][1]);
             }
 
-            int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
-            if(y_min < 0)
+            if(x_gen_min_f < 2.0 * half_width && x_gen_max_f >= 0.0)
             {
-                y_min = 0;
-            }
-            int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
-            if(y_max > img_out->height - 1)
-            {
-                y_max = img_out->height - 1;
-            }
-
-
-            for(int y = y_min ; y <= y_max && error == WF3D_SUCCESS; y++)
-            {
-                float y_f = 0.5f + (float)y;
-
-                float x_min_f = 2.0f * half_width;
-                float x_max_f = 0.0;
-                for(int i0 = 0 ; i0 < 3 ; i0++)
+                int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
+                if(y_min < 0)
                 {
-                    int i1 = (i0 + 1) % 3;
-                    float t = (y_f - screen_coords[i1][1]) / (screen_coords[i0][1] - screen_coords[i1][1]);
-                    if(0.0 <= t && t <= 1.0f)
+                    y_min = 0;
+                }
+                int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
+                if(y_max > img_out->height - 1)
+                {
+                    y_max = img_out->height - 1;
+                }
+
+
+                for(int y = y_min ; y <= y_max && error == WF3D_SUCCESS; y++)
+                {
+                    float y_f = 0.5f + (float)y;
+
+                    float x_min_f = 2.0f * half_width;
+                    float x_max_f = 0.0;
+                    for(int i0 = 0 ; i0 < 3 ; i0++)
                     {
-                        float a = t;
-                        float b = 1.0f - t;
-                        float x_f = a * screen_coords[i0][0] + b * screen_coords[i1][0];
-
-                        x_min_f = fminf(x_min_f, x_f);
-                        x_max_f = fmaxf(x_max_f, x_f);
-                    }
-                }
-
-                int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
-                if(x_min < 0)
-                {
-                    x_min = 0;
-                }
-                int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
-                if(x_max > img_out->width - 1)
-                {
-                    x_max = img_out->width - 1;
-                }
-
-                for(int x = x_min ; x <= x_max && error == WF3D_SUCCESS ; x++)
-                {
-                    if(triangle_min_depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
-                    {
-                        float x_f = 0.5f + (float)x;
-
-                        wf3d_vect3d v_intersection;
+                        int i1 = (i0 + 1) % 3;
+                        float t = (y_f - screen_coords[i1][1]) / (screen_coords[i0][1] - screen_coords[i1][1]);
+                        if(0.0 <= t && t <= 1.0f)
                         {
-                            float dir_vect_coords[4] __attribute__( (aligned(16)) );
-                            dir_vect_coords[0] = 0.0;
-                            dir_vect_coords[1] = (x_f - half_width) * inv_x_scale;
-                            dir_vect_coords[2] = (y_f - half_height) * inv_y_scale;
-                            dir_vect_coords[3] = -1.0f;
+                            float a = t;
+                            float b = 1.0f - t;
+                            float x_f = a * screen_coords[i0][0] + b * screen_coords[i1][0];
 
-                            wf3d_vect3d dir_vect = wf3d_vect3d_load4(dir_vect_coords);
-
-                            float const t = wf3d_vect3d_dot(rel_vertex[0], rel_normal) / wf3d_vect3d_dot(dir_vect, rel_normal);
-                            v_intersection = wf3d_vect3d_scalar_mul(dir_vect, t);
+                            x_min_f = fminf(x_min_f, x_f);
+                            x_max_f = fmaxf(x_max_f, x_f);
                         }
+                    }
 
-                        float depth = - wf3d_vect3d_get_component(v_intersection, 2);
+                    int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
+                    if(x_min < 0)
+                    {
+                        x_min = 0;
+                    }
+                    int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
+                    if(x_max > img_out->width - 1)
+                    {
+                        x_max = img_out->width - 1;
+                    }
 
-                        if(depth <= cam->far_clipping_distance && depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
+                    for(int x = x_min ; x <= x_max && error == WF3D_SUCCESS ; x++)
+                    {
+                        if(triangle_min_depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
                         {
-                            //Gets barycentric coordinates
-                            float barycentric_coords[3];
-                            float barycentric_sum = 0.0;
-                            for(int vi = 0 ; vi < 3 ; vi++)
+                            float x_f = 0.5f + (float)x;
+
+                            wf3d_vect3d v_intersection;
                             {
-                                int const vi1 = (vi + 1) % 3;
-                                float const tmp = wf3d_vect3d_dot(
-                                                                    opp_size_cross_normal[vi],
-                                                                    wf3d_vect3d_sub(v_intersection, rel_vertex[vi1])
-                                                                 );
-                                barycentric_coords[vi] = tmp;
-                                barycentric_sum += tmp;
+                                float dir_vect_coords[4] __attribute__( (aligned(16)) );
+                                dir_vect_coords[0] = 0.0;
+                                dir_vect_coords[1] = (x_f - half_width) * inv_x_scale;
+                                dir_vect_coords[2] = (y_f - half_height) * inv_y_scale;
+                                dir_vect_coords[3] = -1.0f;
+
+                                wf3d_vect3d dir_vect = wf3d_vect3d_load4(dir_vect_coords);
+
+                                float const t = wf3d_vect3d_dot(rel_vertex[0], rel_normal) / wf3d_vect3d_dot(dir_vect, rel_normal);
+                                v_intersection = wf3d_vect3d_scalar_mul(dir_vect, t);
                             }
 
-                            float const inv_barycentric_sum = 1.0f / barycentric_sum;
-                            for(int vi = 0 ; vi < 3 ; vi++)
+                            float depth = - wf3d_vect3d_get_component(v_intersection, 2);
+
+                            if(depth <= cam->far_clipping_distance && depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
                             {
-                                barycentric_coords[vi] *= inv_barycentric_sum;
+                                //Gets barycentric coordinates
+                                float barycentric_coords[3];
+                                float barycentric_sum = 0.0;
+                                for(int vi = 0 ; vi < 3 ; vi++)
+                                {
+                                    int const vi1 = (vi + 1) % 3;
+                                    float const tmp = wf3d_vect3d_dot(
+                                                                        opp_size_cross_normal[vi],
+                                                                        wf3d_vect3d_sub(v_intersection, rel_vertex[vi1])
+                                                                     );
+                                    barycentric_coords[vi] = tmp;
+                                    barycentric_sum += tmp;
+                                }
+
+                                float const inv_barycentric_sum = 1.0f / barycentric_sum;
+                                for(int vi = 0 ; vi < 3 ; vi++)
+                                {
+                                    barycentric_coords[vi] *= inv_barycentric_sum;
+                                }
+
+                                wf3d_color final_color;
+                                triangle->color_of(triangle->design_data, &final_color, barycentric_coords);
+
+                                error = wf3d_Image3d_SetPixel(img_out, x, y, &final_color, depth, v_intersection, triangle->normal);
                             }
-
-                            wf3d_color final_color;
-                            triangle->color_of(triangle->design_data, &final_color, barycentric_coords);
-
-                            error = wf3d_Image3d_SetPixel(img_out, x, y, &final_color, depth, v_intersection, triangle->normal);
                         }
                     }
                 }
