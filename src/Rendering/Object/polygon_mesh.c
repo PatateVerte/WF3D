@@ -174,7 +174,7 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos
 //
 //
 //
-wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_Image3d* img_out, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
 {
     if(obj == NULL)
     {
@@ -185,7 +185,7 @@ wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_
 
     for(int fi = 0 ; fi < obj->nb_faces && error == WF3D_SUCCESS ; fi++)
     {
-        error = wf3d_triangle3d_Rasterization(obj->local_face_list + fi, img_out, depth_buffer, v_pos, q_rot, cam);
+        error = wf3d_triangle3d_Rasterization(obj->local_face_list + fi, img_out, v_pos, q_rot, cam);
     }
 
     return error;

@@ -3,11 +3,21 @@
 
 #include <stdint.h>
 
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
+
 typedef struct
 {
-    uint8_t data[4];   //RGB (in this order, one remaining byte to align
+    float rgba[4];
 
 } wf3d_color;
+
+//Set a color
+wf3d_color* wf3d_color_SetRGB(wf3d_color* color, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
+//Return rgba code in rgba[4]
+uint8_t* wf3d_color_GetRGB(wf3d_color const* color, uint8_t* rgba);
 
 //Mix several colors
 wf3d_color* wf3d_color_mix_colors(wf3d_color* mixed_color, wf3d_color const* color_list, float const* coeff, int nb_colors);

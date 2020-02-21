@@ -7,6 +7,7 @@
 #include <WF3D/Geometry/vect3d.h>
 #include <WF3D/Rendering/camera3d.h>
 #include <WF3D/Rendering/Shapes/triangle3d.h>
+#include <WF3D/Rendering/Design/image3d.h>
 
 typedef struct
 {
@@ -38,7 +39,7 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos
 
 //Rasterization function
 //
-wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_img_gen_interface* img_out, float* depth_buffer, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam);
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_Image3d* img_out, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam);
 
 
 #endif // WF3D_OBJECT3D_H_INCLUDED

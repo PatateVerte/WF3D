@@ -1,7 +1,9 @@
 #ifndef WF3D_IMAGE3D_H_INCLUDED
 #define WF3D_IMAGE3D_H_INCLUDED
 
+#include <WF3D/error.h>
 #include <WF3D/Rendering/Design/color.h>
+#include <WF3D/Geometry/vect3d.h>
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -12,45 +14,62 @@ typedef struct
     int width;
     int height;
 
-    wf3d_color* color_list;
-
-    bool z_buffer_on;
+    wf3d_color* color;
     float* z_buffer;
+    wf3d_vect3d* M;
+    wf3d_vect3d* normal;
 
 } wf3d_Image3d;
 
 //
-wf3d_Image3d* wf3d_Image3d_Create(int width, int height, bool z_buffer_on);
+wf3d_Image3d* wf3d_Image3d_Create(int width, int height);
 
 //
 void wf3d_Image3d_Destroy(wf3d_Image3d* img);
 
 //
-wf3d_Image3d* wf3d_Image3d_Clear(wf3d_Image3d* img, wf3d_color const* background_color, float z);
+wf3d_Image3d* wf3d_Image3d_Clear(wf3d_Image3d* img, wf3d_color const* background_color);
 
-//
-#define wf3d_Image3d_unsafe_pixel(img, x, y) \
-    ( (img)->color_list[(y) * (img)->width +(x)] )
-
-static inline size_t wf3d_Image3d_unsafe_pixel_index(wf3d_Image3d* img, int x, int y)
+static inline size_t wf3d_Image3d_pixel_index(wf3d_Image3d const* img, int x, int y)
 {
     return (size_t)y * (size_t)img->width + (size_t)x;
 }
 
 //
-wf3d_color* wf3d_Image3d_GetPixelPtr(wf3d_Image3d* img, int x, int y);
+static inline float wf3d_Image3d_unsafe_Depth(wf3d_Image3d const* img, int x, int y)
+{
+    size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
+    return img->z_buffer[pixel_index];
+}
+
+static inline wf3d_error wf3d_Image3d_SetPixel(wf3d_Image3d* img, int x, int y, wf3d_color const* color, float z, wf3d_vect3d M, wf3d_vect3d normal)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    if(img != NULL)
+    {
+        if(x >= 0 && x < img->width && y >= 0 && y < img->height)
+        {
+            size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
+            if(z <= img->z_buffer[pixel_index])
+            {
+                img->color[pixel_index] = *color;
+                img->z_buffer[pixel_index] = z;
+                img->M[pixel_index] = M;
+                img->normal[pixel_index] = normal;
+            }
+        }
+        else
+        {
+            error = WF3D_IMAGE_ACCESS_ERROR;
+        }
+    }
+
+    return error;
+}
 
 //
-wf3d_img_gen_interface* wf3d_Image3d_OpenGenInterface(wf3d_Image3d* img3d, wf3d_img_gen_interface* img_gen);
-
-//
-int wf3d_Image3d_SetPixelCallback(void* img_obj, int row, int column, wf3d_color const* color);
-
-//Not tested
-int wf3d_Image3d_GetPixelCallback(void* img_obj, int row, int column, wf3d_color* color);
-
-//
-int wf3d_Image3d_SetPixelCallbackZBuffer(void* img_obj, int row, int column, wf3d_color const* color, float z);
+wf3d_error wf3d_Image3d_WriteInImgGen(wf3d_Image3d const* img, wf3d_img_gen_interface* img_out);
 
 //
 int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file);
