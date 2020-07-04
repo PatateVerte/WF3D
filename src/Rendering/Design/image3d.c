@@ -105,6 +105,7 @@ wf3d_Image3d* wf3d_Image3d_Clear(wf3d_Image3d* img, wf3d_color const* background
 wf3d_error wf3d_Image3d_WriteInImgGen(wf3d_Image3d const* img, wf3d_img_gen_interface* img_out)
 {
     wf3d_error error = WF3D_SUCCESS;
+    int access_error = 0;
 
     if(img != NULL)
     {
@@ -113,8 +114,96 @@ wf3d_error wf3d_Image3d_WriteInImgGen(wf3d_Image3d const* img, wf3d_img_gen_inte
             for(int y = 0 ; y < img->height ; y++)
             {
                 size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
-                error = img_out->set_pixel_callback(img_out->img_obj, x, y, img->color + pixel_index);
+                access_error = img_out->set_pixel_callback(img_out->img_obj, x, y, img->color + pixel_index);
+                if(access_error != 0)
+                {
+                    error = WF3D_IMAGE_ACCESS_ERROR;
+                }
             }
+        }
+    }
+
+    return error;
+}
+
+//Adds the enlighted image3d to img_gen_interface
+//
+//
+wf3d_error wf3d_Image3d_EnlightInImgGen(wf3d_Image3d const* img, wf3d_lightsource const* lightsource, wf3d_img_gen_interface* img_out)
+{
+    wf3d_error error = WF3D_SUCCESS;
+    int access_error = 0;
+
+    if(img != NULL)
+    {
+        for(int x = 0 ; x < img->width && error == WF3D_SUCCESS ; x++)
+        {
+            for(int y = 0 ; y < img->height ; y++)
+            {
+                size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
+
+                wf3d_color pixel_color;
+                wf3d_lightsource_enlight(lightsource, &pixel_color, img->color + pixel_index, img->M[pixel_index], img->normal[pixel_index]);
+
+                wf3d_color previous_color;
+                access_error = img_out->get_pixel_callback(img_out->img_obj, x, y, &previous_color);
+
+                if(access_error == 0)
+                {
+                    wf3d_color final_color;
+                    for(unsigned int i = 0 ; i < 3 ; i++)
+                    {
+                        final_color.rgba[i] = pixel_color.rgba[i] + previous_color.rgba[i];
+                    }
+                    final_color.rgba[3] = pixel_color.rgba[3];
+
+                    access_error = img_out->set_pixel_callback(img_out->img_obj, x, y, &final_color);
+                }
+                else
+                {
+                    error = WF3D_IMAGE_ACCESS_ERROR;
+                }
+            }
+        }
+    }
+
+    return error;
+}
+
+//Adds the enlighted image3d to img_out
+//
+//
+wf3d_error wf3d_Image3d_EnlightInImg3d(wf3d_Image3d const* img, wf3d_lightsource const* lightsource, wf3d_Image3d* img_out)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    if(img != NULL)
+    {
+        if(img->width == img_out->width && img->height == img_out->height)
+        {
+            for(int x = 0 ; x < img->width && error == WF3D_SUCCESS ; x++)
+            {
+                for(int y = 0 ; y < img->height ; y++)
+                {
+                    size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
+
+                    wf3d_color pixel_color;
+                    wf3d_lightsource_enlight(lightsource, &pixel_color, img->color + pixel_index, img->M[pixel_index], img->normal[pixel_index]);
+
+                    wf3d_color final_color;
+                    for(unsigned int i = 0 ; i < 3 ; i++)
+                    {
+                        final_color.rgba[i] = pixel_color.rgba[i] + img_out->color[pixel_index].rgba[i];
+                    }
+                    final_color.rgba[3] = pixel_color.rgba[3];
+
+                    img_out->color[pixel_index] = final_color;
+                }
+            }
+        }
+        else
+        {
+            error = WF3D_IMAGE_ACCESS_ERROR;
         }
     }
 
@@ -178,7 +267,7 @@ int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file)
             for(size_t k = 0 ; k < nb_pixels && error == 0 ; k++)
             {
                 uint8_t shuffled_buffer[4];
-                wf3d_color_GetRGB(img->color + k, shuffled_buffer);
+                wf3d_color_GetRGBA(img->color + k, shuffled_buffer);
 
                 uint8_t buff[4];
                 for(int c = 0 ; c < 3 ; c++)

@@ -108,7 +108,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
     float const inv_y_scale = 1.0 / y_scale;
 
     owl_v3f32 rel_vertex[3];
-    float vertex_coords[3][4] __attribute__( (aligned(16)) );
+    float vertex_coords[3][4] OWL_ALIGN16;
 
     owl_v3f32 opp_side_cross_normal[3];
     owl_v3f32 rel_normal = owl_q32_transform_v3f32(q_rot, triangle->normal);
@@ -190,18 +190,14 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
             if(x_gen_min_f < 2.0 * half_width && x_gen_max_f >= 0.0)
             {
                 int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
-                if(y_min < 0)
-                {
-                    y_min = 0;
-                }
                 int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
-                if(y_max > img_out->height - 1)
+                if(y_max > img_out->height)
                 {
-                    y_max = img_out->height - 1;
+                    y_max = img_out->height;
                 }
 
 
-                for(int y = y_min ; y <= y_max && error == WF3D_SUCCESS; y++)
+                for(int y = y_min ; y < y_max && error == WF3D_SUCCESS; y++)
                 {
                     float y_f = 0.5f + (float)y;
 
@@ -223,17 +219,13 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                     }
 
                     int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
-                    if(x_min < 0)
-                    {
-                        x_min = 0;
-                    }
                     int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
-                    if(x_max > img_out->width - 1)
+                    if(x_max > img_out->width)
                     {
-                        x_max = img_out->width - 1;
+                        x_max = img_out->width;
                     }
 
-                    for(int x = x_min ; x <= x_max && error == WF3D_SUCCESS ; x++)
+                    for(int x = x_min ; x < x_max && error == WF3D_SUCCESS ; x++)
                     {
                         if(triangle_min_depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
                         {
@@ -241,13 +233,11 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
                             owl_v3f32 v_intersection;
                             {
-                                float dir_vect_coords[4] __attribute__( (aligned(16)) );
-                                dir_vect_coords[0] = (x_f - half_width) * inv_x_scale;
-                                dir_vect_coords[1] = (y_f - half_height) * inv_y_scale;
-                                dir_vect_coords[2] = -1.0f;
-                                dir_vect_coords[3] = 0.0;
-
-                                owl_v3f32 dir_vect = owl_v3f32_load4(dir_vect_coords);
+                                owl_v3f32 dir_vect = owl_v3f32_set(
+                                                                    (x_f - half_width) * inv_x_scale,
+                                                                    (y_f - half_height) * inv_y_scale,
+                                                                    -1.0
+                                                                   );
 
                                 float const t = owl_v3f32_dot(rel_vertex[0], rel_normal) / owl_v3f32_dot(dir_vect, rel_normal);
                                 v_intersection = owl_v3f32_scalar_mul(dir_vect, t);

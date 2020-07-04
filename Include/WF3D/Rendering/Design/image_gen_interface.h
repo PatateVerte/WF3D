@@ -12,9 +12,9 @@ typedef struct
     //Return non-zero if failed
     int (*set_pixel_callback)(void*, int, int, wf3d_color const*);
 
-    //int get_pixel_callback(void* img_obj, int x, int y, wf3d_color const* color)
+    //int get_pixel_callback(void* img_obj, int x, int y, wf3d_color* color)
     //Return non-zero if failed
-    int (*get_pixel_callback)(void*, int, int, wf3d_color const*);
+    int (*get_pixel_callback)(void*, int, int, wf3d_color*);
 
     //
     void* img_obj;

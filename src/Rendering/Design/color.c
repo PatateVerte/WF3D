@@ -9,9 +9,9 @@
 //Set a color
 //
 //
-wf3d_color* wf3d_color_SetRGB(wf3d_color* color, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+wf3d_color* wf3d_color_SetRGBA(wf3d_color* color, uint8_t* rgba)
 {
-    int32_t color_i = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    int32_t color_i = (rgba[3] << 24) | (rgba[2] << 16) | (rgba[1] << 8) | (rgba[0] << 0);
     __m128i color_vect = _mm_cvtsi32_si128(color_i);
     color_vect = _mm_cvtepu8_epi32(color_vect);
 
@@ -25,7 +25,7 @@ wf3d_color* wf3d_color_SetRGB(wf3d_color* color, uint8_t r, uint8_t g, uint8_t b
 //Return rgba code in rgba[4]
 //
 //
-uint8_t* wf3d_color_GetRGB(wf3d_color const* color, uint8_t* rgba)
+uint8_t* wf3d_color_GetRGBA(wf3d_color const* color, uint8_t* rgba)
 {
     __m128i color_vect = _mm_cvtps_epi32( _mm_mul_ps(_mm_loadu_ps(color->rgba), _mm_set1_ps(255.0)) );
     color_vect = _mm_packus_epi32(color_vect, color_vect);
@@ -65,12 +65,15 @@ wf3d_color* wf3d_color_mix_colors(wf3d_color* mixed_color, wf3d_color const* col
 //
 wf3d_color* wf3d_color_filter(wf3d_color* dst, wf3d_color const* src, float* filter)
 {
+    __m128 src_vect = _mm_loadu_ps(src->rgba);
+    __m128 color_vect = _mm_mul_ps(
+                                    src_vect,
+                                    _mm_loadu_ps(filter)
+                                   );
+    color_vect = _mm_insert_ps(color_vect, src_vect, 0b11110000);
     _mm_storeu_ps(
                     dst->rgba,
-                    _mm_mul_ps(
-                                _mm_loadu_ps(src->rgba),
-                                _mm_loadu_ps(filter)
-                               )
+                    color_vect
                   );
 
     return dst;

@@ -43,7 +43,7 @@ float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
         return 0.0;
     }
 
-    return 0.5f * M_SQRT3 * cube->side;
+    return 0.5 * M_SQRT3 * cube->side;
 }
 
 //
@@ -57,7 +57,7 @@ float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
     }
 
     owl_v3f32 base_xyz[3];
-    owl_v3f32_base_xyz(base_xyz, cube->side);
+    owl_v3f32_base_xyz(base_xyz, 0.5 * cube->side);
 
     float inf_radius = 0.0;
     for(int k = 0 ; k < 3 ; k++)
@@ -83,7 +83,7 @@ float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos,
     }
 
     owl_v3f32 base_xyz[3];
-    owl_v3f32_base_xyz(base_xyz, cube->side);
+    owl_v3f32_base_xyz(base_xyz, 0.5 * cube->side);
 
     float inf_radius = 0.0;
     for(int k = 0 ; k < 3 ; k++)

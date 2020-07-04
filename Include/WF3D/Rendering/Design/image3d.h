@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <WF3D/Rendering/Design/image_gen_interface.h>
+#include <WF3D/Rendering/lightsource.h>
 
 typedef struct
 {
@@ -71,6 +72,12 @@ static inline wf3d_error wf3d_Image3d_SetPixel(wf3d_Image3d* img, int x, int y, 
 
 //
 wf3d_error wf3d_Image3d_WriteInImgGen(wf3d_Image3d const* img, wf3d_img_gen_interface* img_out);
+
+//Adds the enlighted image3d to img_gen_interface
+wf3d_error wf3d_Image3d_EnlightInImgGen(wf3d_Image3d const* img, wf3d_lightsource const* lightsource, wf3d_img_gen_interface* img_out);
+
+//Adds the enlighted image3d to img_out
+wf3d_error wf3d_Image3d_EnlightInImg3d(wf3d_Image3d const* img, wf3d_lightsource const* lightsource, wf3d_Image3d* img_out);
 
 //
 int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file);
