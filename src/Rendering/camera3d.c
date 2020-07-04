@@ -1,5 +1,7 @@
 #include <WF3D/Rendering/camera3d.h>
 
+#include <math.h>
+
 //
 //
 //

@@ -3,7 +3,8 @@
 
 #include <WF3D/error.h>
 #include <WF3D/Rendering/Design/color.h>
-#include <WF3D/Geometry/vect3d.h>
+
+#include <OWL/v3f32.h>
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -16,8 +17,8 @@ typedef struct
 
     wf3d_color* color;
     float* z_buffer;
-    wf3d_vect3d* M;
-    wf3d_vect3d* normal;
+    owl_v3f32* M;
+    owl_v3f32* normal;
 
 } wf3d_Image3d;
 
@@ -42,7 +43,7 @@ static inline float wf3d_Image3d_unsafe_Depth(wf3d_Image3d const* img, int x, in
     return img->z_buffer[pixel_index];
 }
 
-static inline wf3d_error wf3d_Image3d_SetPixel(wf3d_Image3d* img, int x, int y, wf3d_color const* color, float z, wf3d_vect3d M, wf3d_vect3d normal)
+static inline wf3d_error wf3d_Image3d_SetPixel(wf3d_Image3d* img, int x, int y, wf3d_color const* color, float z, owl_v3f32 M, owl_v3f32 normal)
 {
     wf3d_error error = WF3D_SUCCESS;
 

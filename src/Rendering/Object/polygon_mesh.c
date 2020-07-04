@@ -104,8 +104,8 @@ float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj)
         {
             for(int k = 0 ; k < 3 ; k++)
             {
-                wf3d_vect3d vertex = obj->local_face_list[fi].vertex_list[k];
-                float tmp = wf3d_vect3d_dot(vertex, vertex);
+                owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
+                float tmp = owl_v3f32_dot(vertex, vertex);
                 square_radius = fmaxf(square_radius, tmp);
             }
         }
@@ -124,7 +124,7 @@ float wf3d_PolygonMesh_Radius(wf3d_PolygonMesh* obj)
 //
 //
 //
-float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos)
+float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, owl_v3f32 v_pos)
 {
     if(obj == NULL)
     {
@@ -137,8 +137,8 @@ float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos)
     {
         for(int k = 0 ; k < 3 ; k++)
         {
-            wf3d_vect3d vertex = obj->local_face_list[fi].vertex_list[k];
-            float tmp = wf3d_vect3d_inf_norm( wf3d_vect3d_add(vertex, v_pos) );
+            owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
+            float tmp = owl_v3f32_norminf( owl_v3f32_add(vertex, v_pos) );
             inf_radius = fmaxf(inf_radius, tmp);
         }
     }
@@ -149,7 +149,7 @@ float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos)
 //
 //
 //
-float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos, wf3d_quat q_rot)
+float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     if(obj == NULL)
     {
@@ -162,8 +162,8 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos
     {
         for(int k = 0 ; k < 3 ; k++)
         {
-            wf3d_vect3d vertex = obj->local_face_list[fi].vertex_list[k];
-            float tmp = wf3d_vect3d_inf_norm( wf3d_vect3d_add( wf3d_quat_transform_vect3d(q_rot, vertex), v_pos) );
+            owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
+            float tmp = owl_v3f32_norminf( owl_v3f32_add( owl_q32_transform_v3f32(q_rot, vertex), v_pos) );
             inf_radius = fmaxf(inf_radius, tmp);
         }
     }
@@ -174,7 +174,7 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh* obj, wf3d_vect3d v_pos
 //
 //
 //
-wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_Image3d* img_out, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(obj == NULL)
     {

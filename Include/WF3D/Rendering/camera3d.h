@@ -3,10 +3,6 @@
 
 #include <stdbool.h>
 
-#include <WF3D/Geometry/vect3d.h>
-#include <WF3D/Geometry/quat.h>
-#include <WF3D/Geometry/matrix3x3.h>
-
 typedef struct
 {
     float near_clipping_distance;

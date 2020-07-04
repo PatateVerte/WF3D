@@ -1,9 +1,9 @@
 #ifndef WF3D_TRIANGLE_H_INCLUDED
 #define WF3D_TRIANGLE_H_INCLUDED
 
-#include <WF3D/Geometry/vect3d.h>
-#include <WF3D/Geometry/matrix3x3.h>
-#include <WF3D/Geometry/quat.h>
+#include <OWL/v3f32.h>
+#include <OWL/mxf32_3x3.h>
+#include <OWL/q32.h>
 
 #include <WF3D/error.h>
 
@@ -14,8 +14,8 @@
 
 typedef struct
 {
-    wf3d_vect3d vertex_list[3];
-    wf3d_vect3d normal;
+    owl_v3f32 vertex_list[3];
+    owl_v3f32 normal;
 
     //wf3d_color* color_of(void* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
     wf3d_color* (*color_of)(void const*, wf3d_color*, float const*);
@@ -24,7 +24,7 @@ typedef struct
 } wf3d_triangle3d;
 
 wf3d_triangle3d* wf3d_triangle3d_Set(
-                                        wf3d_triangle3d* triangle, wf3d_vect3d* vertex_list, wf3d_vect3d normal,
+                                        wf3d_triangle3d* triangle, owl_v3f32* vertex_list, owl_v3f32 normal,
                                         wf3d_color* (*color_of)(void const*, wf3d_color*, float const*),
                                         void const* design_data
                                      );
@@ -41,16 +41,16 @@ static inline wf3d_triangle3d* wf3d_triangle3d_CopyDesign(wf3d_triangle3d* t_dst
 wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle);
 
 //Move triangle
-wf3d_triangle3d* wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, wf3d_vect3d v);
+wf3d_triangle3d* wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v);
 
 //Transform triangle (only the coordinates)
-wf3d_triangle3d* wf3d_triangle3d_GeometricTransform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, wf3d_quat q_rot, wf3d_vect3d v);
+wf3d_triangle3d* wf3d_triangle3d_GeometricTransform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_q32 q_rot, owl_v3f32 v);
 
 //Transform triangle and copy data
-wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, wf3d_quat q_rot, wf3d_vect3d v);
+wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_q32 q_rot, owl_v3f32 v);
 
 //Rasterization of a triangle
-wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image3d* img_out, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam);
+wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
 typedef struct
 {

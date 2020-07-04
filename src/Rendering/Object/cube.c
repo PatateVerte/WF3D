@@ -49,22 +49,22 @@ float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
 //
 //
 //
-float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, wf3d_vect3d v_pos)
+float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
 {
     if(cube == NULL)
     {
         return 0.0;
     }
 
-    wf3d_vect3d base_xyz[3];
-    wf3d_vect3d_base_xyz(base_xyz, cube->side);
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_base_xyz(base_xyz, cube->side);
 
     float inf_radius = 0.0;
     for(int k = 0 ; k < 3 ; k++)
     {
         float const tmp = fmaxf(
-                                    wf3d_vect3d_inf_norm( wf3d_vect3d_add(v_pos, base_xyz[k]) ),
-                                    wf3d_vect3d_inf_norm( wf3d_vect3d_sub(v_pos, base_xyz[k]) )
+                                    owl_v3f32_norminf( owl_v3f32_add(v_pos, base_xyz[k]) ),
+                                    owl_v3f32_norminf( owl_v3f32_sub(v_pos, base_xyz[k]) )
                                 );
         inf_radius = fmaxf(inf_radius, tmp);
     }
@@ -75,23 +75,23 @@ float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, wf3d_vect3d v_pos)
 //
 //
 //
-float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, wf3d_vect3d v_pos, wf3d_quat q_rot)
+float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     if(cube == NULL)
     {
         return 0.0;
     }
 
-    wf3d_vect3d base_xyz[3];
-    wf3d_vect3d_base_xyz(base_xyz, cube->side);
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_base_xyz(base_xyz, cube->side);
 
     float inf_radius = 0.0;
     for(int k = 0 ; k < 3 ; k++)
     {
-        base_xyz[k] = wf3d_quat_transform_vect3d(q_rot, base_xyz[k]);
+        base_xyz[k] = owl_q32_transform_v3f32(q_rot, base_xyz[k]);
         float const tmp = fmaxf(
-                                    wf3d_vect3d_inf_norm( wf3d_vect3d_add(v_pos, base_xyz[k]) ),
-                                    wf3d_vect3d_inf_norm( wf3d_vect3d_sub(v_pos, base_xyz[k]) )
+                                    owl_v3f32_norminf( owl_v3f32_add(v_pos, base_xyz[k]) ),
+                                    owl_v3f32_norminf( owl_v3f32_sub(v_pos, base_xyz[k]) )
                                 );
         inf_radius = fmaxf(inf_radius, tmp);
     }
@@ -102,7 +102,7 @@ float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, wf3d_vect3d v_po
 //Rasterization function
 //
 //
-wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Image3d* img_out, wf3d_vect3d v_pos, wf3d_quat q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(cube == NULL)
     {
@@ -111,27 +111,27 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
 
     wf3d_error error = WF3D_SUCCESS;
 
-    wf3d_vect3d base_xyz[3];
-    wf3d_vect3d_base_xyz(base_xyz, 1.0f);
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_base_xyz(base_xyz, 1.0f);
 
-    wf3d_vect3d adapted_base_xyz[3];
-    wf3d_vect3d_base_xyz(adapted_base_xyz, 0.5f * cube->side);
+    owl_v3f32 adapted_base_xyz[3];
+    owl_v3f32_base_xyz(adapted_base_xyz, 0.5f * cube->side);
 
     for(int bk = 0 ; bk < 3 && error == WF3D_SUCCESS ; bk++)
     {
         wf3d_triangle3d face_piece[2];
 
-        wf3d_vect3d const comple_base[2] =
+        owl_v3f32 const comple_base[2] =
         {
             adapted_base_xyz[(bk + 1) % 3],
             adapted_base_xyz[(bk + 2) % 3]
         };
-        wf3d_vect3d vertex_list[4] =
+        owl_v3f32 vertex_list[4] =
         {
-            wf3d_vect3d_add( adapted_base_xyz[bk], wf3d_vect3d_add( comple_base[0], comple_base[1] ) ),
-            wf3d_vect3d_add( adapted_base_xyz[bk], wf3d_vect3d_sub( comple_base[0], comple_base[1] ) ),
-            wf3d_vect3d_sub( adapted_base_xyz[bk], wf3d_vect3d_sub( comple_base[0], comple_base[1] ) ),
-            wf3d_vect3d_sub( adapted_base_xyz[bk], wf3d_vect3d_add( comple_base[0], comple_base[1] ) )
+            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) )
         };
 
         wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->color_list + 2*bk);
@@ -143,13 +143,13 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
 
             if(error == WF3D_SUCCESS)
             {
-                face_piece[0].normal = wf3d_vect3d_scalar_mul(base_xyz[bk], -1.0f);
+                face_piece[0].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
                 face_piece[0].design_data = cube->color_list + 2*bk + 1;
-                face_piece[1].normal = wf3d_vect3d_scalar_mul(base_xyz[bk], -1.0f);
+                face_piece[1].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
                 face_piece[1].design_data = cube->color_list + 2*bk + 1;
-                wf3d_vect3d v_pos_behind = wf3d_vect3d_add_scalar_mul(
+                owl_v3f32 v_pos_behind = owl_v3f32_add_scalar_mul(
                                                                         v_pos,
-                                                                        wf3d_quat_transform_vect3d(q_rot, adapted_base_xyz[bk]),
+                                                                        owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),
                                                                         -2.0
                                                                       );
                 error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, v_pos_behind, q_rot, cam);
