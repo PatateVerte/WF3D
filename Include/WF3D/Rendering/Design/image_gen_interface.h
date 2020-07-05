@@ -8,13 +8,13 @@ typedef struct
     int width;
     int height;
 
-    //int set_pixel_callback(void* img_obj, int x, int y, wf3d_color const* color)
+    //int set_pixel_callback(void* img_obj, int x, int y, wf3d_color_uint8 const* color)
     //Return non-zero if failed
-    int (*set_pixel_callback)(void*, int, int, wf3d_color const*);
+    int (*set_pixel_callback)(void*, int, int, wf3d_color_uint8 const*);
 
-    //int get_pixel_callback(void* img_obj, int x, int y, wf3d_color* color)
+    //int get_pixel_callback(void* img_obj, int x, int y, wf3d_color_uint8* color)
     //Return non-zero if failed
-    int (*get_pixel_callback)(void*, int, int, wf3d_color*);
+    int (*get_pixel_callback)(void*, int, int, wf3d_color_uint8*);
 
     //
     void* img_obj;

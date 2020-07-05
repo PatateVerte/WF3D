@@ -90,7 +90,7 @@ wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_t
 //
 //
 //
-wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(triangle == NULL)
     {
@@ -227,7 +227,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
                     for(int x = x_min ; x < x_max && error == WF3D_SUCCESS ; x++)
                     {
-                        if(triangle_min_depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
+                        if(triangle_min_depth <= wf3d_Image2d_unsafe_Depth(img_out, x, y))
                         {
                             float x_f = 0.5f + (float)x;
 
@@ -245,7 +245,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
                             float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
 
-                            if(depth <= cam->far_clipping_distance && depth <= wf3d_Image3d_unsafe_Depth(img_out, x, y))
+                            if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out, x, y))
                             {
                                 //Gets barycentric coordinates
                                 float barycentric_coords[3];
@@ -267,10 +267,23 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                     barycentric_coords[vi] *= inv_barycentric_sum;
                                 }
 
-                                wf3d_color final_color;
-                                triangle->color_of(triangle->design_data, &final_color, barycentric_coords);
+                                wf3d_color surface_color;
+                                triangle->color_of(triangle->design_data, &surface_color, barycentric_coords);
 
-                                error = wf3d_Image3d_SetPixel(img_out, x, y, &final_color, depth, v_intersection, triangle->normal);
+                                wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
+                                for( unsigned int k = 0 ; k < nb_lightsources ; k++)
+                                {
+                                    wf3d_color lightsource_color;
+                                    wf3d_lightsource_enlight(lightsource_list + k, &lightsource_color, &surface_color, v_intersection, rel_normal);
+
+                                    for(unsigned int i = 0 ; i < 3 ; i++)
+                                    {
+                                        final_color.rgba[i] += lightsource_color.rgba[i];
+                                    }
+                                }
+                                final_color.rgba[3] = surface_color.rgba[3];
+
+                                error = wf3d_Image2d_SetPixel(img_out, x, y, &final_color, depth);
                             }
                         }
                     }
@@ -343,7 +356,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
             owl_v3f32 const clipped_q_rot = owl_q32_from_real(1.0f);
             for(int p = 0 ; p < 2 && error == WF3D_SUCCESS ; p++)
             {
-                error = wf3d_triangle3d_Rasterization(clipped_triangle + p, img_out, clipped_v_pos, clipped_q_rot, cam);
+                error = wf3d_triangle3d_Rasterization(clipped_triangle + p, img_out, lightsource_list, nb_lightsources, clipped_v_pos, clipped_q_rot, cam);
             }
         }
         //If there are 2 vertices behind
@@ -397,7 +410,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
             owl_v3f32 const clipped_v_pos = owl_v3f32_zero();
             owl_v3f32 const clipped_q_rot = owl_q32_from_real(1.0f);
-            error = wf3d_triangle3d_Rasterization(&clipped_triangle, img_out, clipped_v_pos, clipped_q_rot, cam);
+            error = wf3d_triangle3d_Rasterization(&clipped_triangle, img_out, lightsource_list, nb_lightsources, clipped_v_pos, clipped_q_rot, cam);
         }
     }
 

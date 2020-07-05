@@ -8,7 +8,9 @@
 #include <WF3D/error.h>
 
 #include <WF3D/Rendering/camera3d.h>
+#include <WF3D/Rendering/Design/image2d.h>
 #include <WF3D/Rendering/Design/image3d.h>
+#include <WF3D/Rendering/lightsource.h>
 
 #include <stdbool.h>
 
@@ -49,8 +51,9 @@ wf3d_triangle3d* wf3d_triangle3d_GeometricTransform(wf3d_triangle3d* t_dst, wf3d
 //Transform triangle and copy data
 wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_q32 q_rot, owl_v3f32 v);
 
+
 //Rasterization of a triangle
-wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
 typedef struct
 {

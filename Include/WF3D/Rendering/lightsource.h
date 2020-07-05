@@ -2,6 +2,7 @@
 #define WF3D_LIGHTSOURCE_H_INCLUDED
 
 #include <OWL/v3f32.h>
+#include <OWL/q32.h>
 
 #include <WF3D/Rendering/Design/color.h>
 
@@ -50,6 +51,10 @@ typedef struct
 
 } wf3d_lightsource;
 
+//Transform a lightsource
+wf3d_lightsource* wf3d_lightsource_transform(wf3d_lightsource* lightsource_dst, wf3d_lightsource const* lightsource_src, owl_v3f32 v, owl_q32 q_rot);
+
+//
 wf3d_color* wf3d_lightsource_enlight(wf3d_lightsource const* lightsource, wf3d_color* dst, wf3d_color const* src, owl_v3f32 v_pos, owl_v3f32 normal);
 
 #endif // WF3D_LIGHTSOURCE_H_INCLUDED

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <malloc.h>
-
+/*
 //
 //
 //
@@ -69,35 +69,6 @@ wf3d_Image3d* wf3d_Image3d_Clear(wf3d_Image3d* img, wf3d_color const* background
 
     return img;
 }
-
-//
-//
-//
-/*wf3d_error wf3d_Image3d_SetPixel(wf3d_Image3d* img, int x, int y, wf3d_color const* color, float z, wf3d_vect3d M, wf3d_vect3d normal)
-{
-    wf3d_error error = WF3D_SUCCESS;
-
-    if(img != NULL)
-    {
-        if(x >= 0 && x < img->width && y >= 0 && y < img->height)
-        {
-            size_t pixel_index = wf3d_Image3d_pixel_index(img, x, y);
-            if(z <= img->z_buffer[pixel_index])
-            {
-                img->color[pixel_index] = *color;
-                img->z_buffer[pixel_index] = z;
-                img->M[pixel_index] = M;
-                img->normal[pixel_index] = normal;
-            }
-        }
-        else
-        {
-            error = WF3D_IMAGE_ACCESS_ERROR;
-        }
-    }
-
-    return error;
-}*/
 
 //
 //
@@ -297,3 +268,4 @@ int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file)
 
     #undef DIB_HEADER_SIZE
 }
+*/

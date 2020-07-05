@@ -22,7 +22,7 @@ typedef struct
     owl_v3f32* normal;
 
 } wf3d_Image3d;
-
+/*
 //
 wf3d_Image3d* wf3d_Image3d_Create(int width, int height);
 
@@ -80,6 +80,6 @@ wf3d_error wf3d_Image3d_EnlightInImgGen(wf3d_Image3d const* img, wf3d_lightsourc
 wf3d_error wf3d_Image3d_EnlightInImg3d(wf3d_Image3d const* img, wf3d_lightsource const* lightsource, wf3d_Image3d* img_out);
 
 //
-int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file);
+int wf3d_Image3d_WriteInBMPFile(wf3d_Image3d const* img, FILE* bmp_file);*/
 
 #endif // IMAGE3D_H_INCLUDED

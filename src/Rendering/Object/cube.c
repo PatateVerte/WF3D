@@ -102,7 +102,7 @@ float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos,
 //Rasterization function
 //
 //
-wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Image3d* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(cube == NULL)
     {
@@ -136,10 +136,10 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
 
         wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->color_list + 2*bk);
         wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->color_list + 2*bk);
-        error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, v_pos, q_rot, cam);
+        error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
         if(error == WF3D_SUCCESS)
         {
-            error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, v_pos, q_rot, cam);
+            error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
 
             if(error == WF3D_SUCCESS)
             {
@@ -152,10 +152,10 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
                                                                         owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),
                                                                         -2.0
                                                                       );
-                error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, v_pos_behind, q_rot, cam);
+                error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, lightsource_list, nb_lightsources, v_pos_behind, q_rot, cam);
                 if(error == WF3D_SUCCESS)
                 {
-                    error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, v_pos_behind, q_rot, cam);
+                    error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, lightsource_list, nb_lightsources, v_pos_behind, q_rot, cam);
                 }
             }
         }
