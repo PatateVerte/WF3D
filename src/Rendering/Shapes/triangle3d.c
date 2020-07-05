@@ -271,17 +271,24 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                 triangle->color_of(triangle->design_data, &surface_color, barycentric_coords);
 
                                 wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
-                                for( unsigned int k = 0 ; k < nb_lightsources ; k++)
+                                if(nb_lightsources == 0)
                                 {
-                                    wf3d_color lightsource_color;
-                                    wf3d_lightsource_enlight(lightsource_list + k, &lightsource_color, &surface_color, v_intersection, rel_normal);
-
-                                    for(unsigned int i = 0 ; i < 3 ; i++)
-                                    {
-                                        final_color.rgba[i] += lightsource_color.rgba[i];
-                                    }
+                                    final_color = surface_color;
                                 }
-                                final_color.rgba[3] = surface_color.rgba[3];
+                                else
+                                {
+                                    for( unsigned int k = 0 ; k < nb_lightsources ; k++)
+                                    {
+                                        wf3d_color lightsource_color;
+                                        wf3d_lightsource_enlight(lightsource_list + k, &lightsource_color, &surface_color, v_intersection, rel_normal);
+
+                                        for(unsigned int i = 0 ; i < 3 ; i++)
+                                        {
+                                            final_color.rgba[i] += lightsource_color.rgba[i];
+                                        }
+                                    }
+                                    final_color.rgba[3] = surface_color.rgba[3];
+                                }
 
                                 error = wf3d_Image2d_SetPixel(img_out, x, y, &final_color, depth);
                             }
