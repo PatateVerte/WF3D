@@ -58,7 +58,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
 typedef struct
 {
-    wf3d_surface vertex_surface_list[3];
+    wf3d_surface const* vertex_surface_list[3];
 
 } wf3d_triangle3d_tricolor_design;
 

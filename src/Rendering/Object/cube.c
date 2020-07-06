@@ -9,14 +9,18 @@
 //Create a coloured cube
 //surface_list[6]
 //
-wf3d_ColoredCube* wf3d_ColoredCube_Create(float side, wf3d_surface const* surface_list)
+wf3d_ColoredCube* wf3d_ColoredCube_Create(float side, wf3d_surface const* const* surface_list)
 {
     wf3d_ColoredCube* cube = malloc(sizeof(*cube));
 
     if(cube != NULL)
     {
         cube->side = side;
-        memcpy(cube->surface_list, surface_list, 6 * sizeof(*surface_list));
+
+        for(unsigned int k = 0 ; k < 6 ; k++)
+        {
+            cube->surface_list[k] = surface_list[k];
+        }
     }
 
     return cube;
@@ -134,8 +138,8 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
             owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) )
         };
 
-        wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list + bk);
-        wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list + bk);
+        wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
+        wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
         error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
         if(error == WF3D_SUCCESS)
         {
@@ -144,9 +148,9 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Ima
             if(error == WF3D_SUCCESS)
             {
                 face_piece[0].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[0].design_data = cube->surface_list + 3 + bk;
+                face_piece[0].design_data = cube->surface_list[3 + bk];
                 face_piece[1].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[1].design_data = cube->surface_list + 3 + bk;
+                face_piece[1].design_data = cube->surface_list[3 + bk];
                 owl_v3f32 v_pos_behind = owl_v3f32_add_scalar_mul(
                                                                         v_pos,
                                                                         owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),

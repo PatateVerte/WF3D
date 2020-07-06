@@ -45,7 +45,7 @@ typedef struct
         with h=(x y z) the coordinates of a point expressed in the eigenbasis
     */
 
-    wf3d_surface surface_data;
+    wf3d_surface const* surface_data;
 
 } wf3d_quadratic_curve OWL_ALIGN16;
 

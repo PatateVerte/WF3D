@@ -110,7 +110,8 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
     owl_v3f32 rel_vertex[3];
     float vertex_coords[3][4] OWL_ALIGN16;
 
-    wf3d_color mix_with_black_color_array[2] ={(wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}}};
+    wf3d_color color_black = (wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}};
+    wf3d_color const* mix_color_with_black_array[2] = {NULL, &color_black};
 
     owl_v3f32 opp_side_cross_normal[3];
     owl_v3f32 rel_normal = owl_q32_transform_v3f32(q_rot, triangle->normal);
@@ -280,10 +281,10 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                 wf3d_surface surface;
                                 triangle->surface_of(triangle->design_data, &surface, barycentric_coords);
 
-                                float mix_with_black_diffusion[2] = {1.0 - surface.diffusion, surface.diffusion};
-                                mix_with_black_color_array[1] = surface.color;
+                                float mix_with_black_diffusion[2] = {surface.diffusion, 1.0 - surface.diffusion};
+                                mix_color_with_black_array[0] = &surface.color;
                                 wf3d_color surface_color;
-                                wf3d_color_mix(&surface_color, mix_with_black_color_array, mix_with_black_diffusion, 2);
+                                wf3d_color_mix(&surface_color, mix_color_with_black_array, mix_with_black_diffusion, 2);
 
                                 wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
                                 if(nb_lightsources == 0)
@@ -456,9 +457,7 @@ wf3d_surface* wf3d_triangle3d_MonoColorSurfaceCallback(void const* design_data_p
 wf3d_surface* wf3d_triangle3d_TriColorSurfaceCallback(void const* design_data_ptr, wf3d_surface* surface_ret, float const* barycentric_coords)
 {
     wf3d_triangle3d_tricolor_design const* design_data = design_data_ptr;
-    wf3d_surface_mix(surface_ret, design_data->vertex_surface_list, barycentric_coords, 3);
-
-    return surface_ret;
+    return wf3d_surface_mix(surface_ret, design_data->vertex_surface_list, barycentric_coords, 3);
 }
 
 //design_data_ptr : wf3d_triangle3d_clipped_design*

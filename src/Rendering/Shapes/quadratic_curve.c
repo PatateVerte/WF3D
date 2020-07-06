@@ -16,7 +16,7 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_
     curve->a = a;
     curve->alpha = alpha;
 
-    curve->surface_data = *surface_data;
+    curve->surface_data = surface_data;
 
     return curve;
 }
@@ -117,15 +117,16 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
 
     owl_q32 q_rot_eigenbasis = owl_q32_mul(q_rot, curve->q_eigenbasis);
 
-    wf3d_color mix_with_black_color_array[2] ={(wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}}};
+    wf3d_color color_black = (wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}};
+    wf3d_color const* mix_color_with_black_array[2] = {NULL, &color_black};
 
     for(int y = 0 ; y < img_out->height && error == WF3D_SUCCESS ; y++)
     {
-        float y_f = ((float)y - half_height) * (cam->tan_v_half_opening_angle / half_height);
+        float y_f = ((float)y - half_height + 0.5) * (cam->tan_v_half_opening_angle / half_height);
 
         for(int x = 0 ; x < img_out->width && error == WF3D_SUCCESS; x++)
         {
-            float x_f = ((float)x - half_width) * (cam->tan_h_half_opening_angle / half_width);
+            float x_f = ((float)x - half_width + 0.5) * (cam->tan_h_half_opening_angle / half_width);
 
             owl_v3f32 v_dir = owl_v3f32_set(x_f, y_f, -1.0);
             float t_min = (1.0 + x_f*x_f + y_f*y_f) * cam->near_clipping_distance;
@@ -148,10 +149,10 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
                                                                            );
                     owl_v3f32 normal = owl_v3f32_normalize(owl_q32_transform_v3f32(q_rot_eigenbasis, normal_eigenbasis));
 
-                    float mix_with_black_diffusion[2] = {1.0 - curve->surface_data.diffusion, curve->surface_data.diffusion};
-                    mix_with_black_color_array[1] = curve->surface_data.color;
+                    float mix_with_black_diffusion[2] = {curve->surface_data->diffusion, 1.0 - curve->surface_data->diffusion};
+                    mix_color_with_black_array[0] = &curve->surface_data->color;
                     wf3d_color surface_color;
-                    wf3d_color_mix(&surface_color, mix_with_black_color_array, mix_with_black_diffusion, 2);
+                    wf3d_color_mix(&surface_color, mix_color_with_black_array, mix_with_black_diffusion, 2);
 
                     wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
                     if(nb_lightsources == 0)

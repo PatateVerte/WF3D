@@ -6,7 +6,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 
-wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* color_list, float const* coeff, int nb_colors)
+wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* const* color_list, float const* coeff, int nb_colors)
 {
     __m128 acc_f = _mm_setzero_ps();
 
@@ -14,7 +14,7 @@ wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* color_list
     {
         acc_f = _mm_add_ps(
                             acc_f,
-                            _mm_mul_ps( _mm_loadu_ps(color_list[k].rgba), _mm_set1_ps(coeff[k]) )
+                            _mm_mul_ps( _mm_loadu_ps(color_list[k]->rgba), _mm_set1_ps(coeff[k]) )
                            );
 
     }

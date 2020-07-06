@@ -12,14 +12,14 @@
 
 typedef struct
 {
-    wf3d_surface surface_list[6];
+    wf3d_surface const* surface_list[6];
     float side;
 
 } wf3d_ColoredCube;
 
 //Create a colored cube
 //color_list[6]
-wf3d_ColoredCube* wf3d_ColoredCube_Create(float side, wf3d_surface const* surface_list);
+wf3d_ColoredCube* wf3d_ColoredCube_Create(float side, wf3d_surface const* const* surface_list);
 
 //
 void wf3d_ColoredCube_Destroy(wf3d_ColoredCube* cube);
