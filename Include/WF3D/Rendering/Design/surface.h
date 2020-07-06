@@ -15,6 +15,9 @@ typedef struct
 			float diffusion;
 			float reflection;
 			float transparency;
+			float relative_refractive_index;    // = n1 / n2
+                                                //n1 refractive index before interaction with the surface
+                                                //n2 refractive index after interaction with the surface
 		};
 	};
 

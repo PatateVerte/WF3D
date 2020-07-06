@@ -192,6 +192,10 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
             if(x_gen_min_f < 2.0 * half_width && x_gen_max_f >= 0.0)
             {
                 int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
+                if(y_min < 0)
+                {
+                    y_min = 0;
+                }
                 int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
                 if(y_max > img_out->height)
                 {
@@ -221,6 +225,10 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                     }
 
                     int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
+                    if(x_min < 0)
+                    {
+                        x_min = 0;
+                    }
                     int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
                     if(x_max > img_out->width)
                     {

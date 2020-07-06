@@ -10,6 +10,7 @@
 
 #include <WF3D/Rendering/camera3d.h>
 #include <WF3D/Rendering/lightsource.h>
+#include <WF3D/Rendering/Design/surface.h>
 #include <WF3D/Rendering/Design/image2d.h>
 #include <WF3D/Rendering/Design/image3d.h>
 
@@ -44,15 +45,17 @@ typedef struct
         with h=(x y z) the coordinates of a point expressed in the eigenbasis
     */
 
+    wf3d_surface surface_data;
+
 } wf3d_quadratic_curve OWL_ALIGN16;
 
 //Set up of a quadratic curve
-wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha);
+wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha, wf3d_surface const* surface_data);
 
 //The intersection between a ray and the quadratic curve
 //Return true if the intersection exists and returns the parameter, false otherwise
 //t contains the parameter for the nearest intersection
-bool wf3d_quadratic_curve_IntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_v3f32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float* t);
+bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_v3f32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t);
 
 //Rasterization of a quadratic curve
 wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
