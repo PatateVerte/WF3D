@@ -5,7 +5,7 @@
 //
 wf3d_triangle3d* wf3d_triangle3d_Set(
                                         wf3d_triangle3d* triangle, owl_v3f32* vertex_list, owl_v3f32 normal,
-                                        wf3d_color* (*color_of)(void const*, wf3d_color*, float const*),
+                                        wf3d_surface* (*surface_of)(void const*, wf3d_surface*, float const*),
                                         void const* design_data
                                      )
 {
@@ -21,7 +21,7 @@ wf3d_triangle3d* wf3d_triangle3d_Set(
 
     triangle->normal = normal;
 
-    triangle->color_of = color_of;
+    triangle->surface_of = surface_of;
     triangle->design_data = design_data;
 
     return triangle;
@@ -109,6 +109,8 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
     owl_v3f32 rel_vertex[3];
     float vertex_coords[3][4] OWL_ALIGN16;
+
+    wf3d_color mix_with_black_color_array[2] ={(wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}}};
 
     owl_v3f32 opp_side_cross_normal[3];
     owl_v3f32 rel_normal = owl_q32_transform_v3f32(q_rot, triangle->normal);
@@ -267,8 +269,13 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                     barycentric_coords[vi] *= inv_barycentric_sum;
                                 }
 
+                                wf3d_surface surface;
+                                triangle->surface_of(triangle->design_data, &surface, barycentric_coords);
+
+                                float mix_with_black_diffusion[2] = {1.0 - surface.diffusion, surface.diffusion};
+                                mix_with_black_color_array[1] = surface.color;
                                 wf3d_color surface_color;
-                                triangle->color_of(triangle->design_data, &surface_color, barycentric_coords);
+                                wf3d_color_mix(&surface_color, mix_with_black_color_array, mix_with_black_diffusion, 2);
 
                                 wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
                                 if(nb_lightsources == 0)
@@ -305,10 +312,10 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
             for(int p = 0 ; p < 2 ; p++)
             {
-                clipped_design[p].original_color_of = triangle->color_of;
+                clipped_design[p].original_surface_of = triangle->surface_of;
                 clipped_design[p].original_design = triangle->design_data;
 
-                clipped_triangle[p].color_of = wf3d_triangle3d_ClippedDesignCallback;
+                clipped_triangle[p].surface_of = wf3d_triangle3d_ClippedDesignCallback;
                 clipped_triangle[p].design_data = &clipped_design;
                 clipped_triangle[p].normal = rel_normal;
 
@@ -370,11 +377,11 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
         else if(nb_vertices_behind == 2)
         {
             wf3d_triangle3d_clipped_design clipped_design;
-            clipped_design.original_color_of = triangle->color_of;
+            clipped_design.original_surface_of = triangle->surface_of;
             clipped_design.original_design = triangle->design_data;
 
             wf3d_triangle3d clipped_triangle;
-            clipped_triangle.color_of = wf3d_triangle3d_ClippedDesignCallback;
+            clipped_triangle.surface_of = wf3d_triangle3d_ClippedDesignCallback;
             clipped_triangle.design_data = &clipped_design;
             clipped_triangle.normal = rel_normal;
 
@@ -424,49 +431,33 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
     return error;
 }
 
-//design_data_ptr : wf3d_color*
+//design_data_ptr : wf3d_surface*
 //
 //
-wf3d_color* wf3d_triangle3d_MonoColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_surface* wf3d_triangle3d_MonoColorSurfaceCallback(void const* design_data_ptr, wf3d_surface* surface_ret, float const* barycentric_coords)
 {
-    if(design_data_ptr == NULL)
-    {
-        return NULL;
-    }
+    wf3d_surface const* design_data = design_data_ptr;
+    *surface_ret = *design_data;
 
-    wf3d_color const* design_data = design_data_ptr;
-    *color_ret = *design_data;
-
-    return color_ret;
+    return surface_ret;
 }
 
 //design_data_ptr : wf3d_triangle3d_tricolor_design*
 //
 //
-wf3d_color* wf3d_triangle3d_TriColorSurfaceCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_surface* wf3d_triangle3d_TriColorSurfaceCallback(void const* design_data_ptr, wf3d_surface* surface_ret, float const* barycentric_coords)
 {
-    if(design_data_ptr == NULL)
-    {
-        return NULL;
-    }
-
     wf3d_triangle3d_tricolor_design const* design_data = design_data_ptr;
+    wf3d_surface_mix(surface_ret, design_data->vertex_surface_list, barycentric_coords, 3);
 
-    wf3d_color_mix_colors(color_ret, design_data->vertex_color_list, barycentric_coords, 3);
-
-    return color_ret;
+    return surface_ret;
 }
 
 //design_data_ptr : wf3d_triangle3d_clipped_design*
 //
 //
-wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void const* design_data_ptr, wf3d_color* color_ret, float const* barycentric_coords)
+wf3d_surface* wf3d_triangle3d_ClippedDesignCallback(void const* design_data_ptr, wf3d_surface* surface_ret, float const* barycentric_coords)
 {
-    if(design_data_ptr == NULL)
-    {
-        return NULL;
-    }
-
     wf3d_triangle3d_clipped_design const* design_data = design_data_ptr;
 
     float new_barycentric_coords[3];
@@ -480,5 +471,5 @@ wf3d_color* wf3d_triangle3d_ClippedDesignCallback(void const* design_data_ptr, w
         }
     }
 
-    return design_data->original_color_of(design_data->original_design, color_ret, new_barycentric_coords);
+    return design_data->original_surface_of(design_data->original_design, surface_ret, new_barycentric_coords);
 }
