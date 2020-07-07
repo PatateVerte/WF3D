@@ -19,7 +19,7 @@ wf3d_Ellipsoid* wf3d_Ellipsoid_Create(float rx, float ry, float rz, wf3d_surface
         owl_v3f32 a = owl_v3f32_zero();
         owl_v3f32 alpha = owl_v3f32_set(1.0 / (rx*rx), 1.0 / (ry*ry), 1.0 / (rz*rz));
 
-        float const delta = 1.0 - (1.0 / ((float)(1<<10)));
+        float const delta = 1.0 - (1.0 / ((float)(1<<7)));
         owl_v3f32 norminf_filter = owl_v3f32_set(delta / rx, delta / ry, delta / rz);
         owl_v3f32 norm2_filter = owl_v3f32_set(delta / rx, delta / ry, delta / rz);
 

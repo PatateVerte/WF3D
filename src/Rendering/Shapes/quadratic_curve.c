@@ -176,9 +176,25 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
         }
 
         y_min = (int)roundf(fmaxf(0.0, y_min_f * y_scale + half_height));
+        if(y_min < 0)
+        {
+            y_min = 0;
+        }
         y_max = (int)roundf(fminf(2.0 * half_height, y_max_f * y_scale + half_height));
+        if(y_max > img_out->height)
+        {
+            y_max = img_out->height;
+        }
         x_min = (int)roundf(fmaxf(0.0, x_min_f * x_scale + half_width));
+        if(x_min < 0)
+        {
+            x_min = 0;
+        }
         x_max = (int)roundf(fminf(2.0 * half_width, x_max_f * x_scale + half_width));
+        if(x_max > img_out->width)
+        {
+            x_max = img_out->width;
+        }
     }
 
     for(int y = y_min ; y < y_max && error == WF3D_SUCCESS ; y++)
