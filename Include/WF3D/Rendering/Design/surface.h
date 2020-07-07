@@ -5,21 +5,9 @@
 
 typedef struct
 {
-    wf3d_color color;
-
-	union
-	{
-		float raw_surface_data[4];
-
-		struct {
-			float diffusion;
-			float reflection;
-			float transparency;
-			float relative_refractive_index;    // = n1 / n2
-                                                //n1 refractive index before interaction with the surface
-                                                //n2 refractive index after interaction with the surface
-		};
-	};
+    wf3d_color diffusion_color;
+    float reflection_filter[4];
+    float refraction_filter[4];
 
 } wf3d_surface;
 

@@ -110,9 +110,6 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
     owl_v3f32 rel_vertex[3];
     float vertex_coords[3][4] OWL_ALIGN16;
 
-    wf3d_color color_black = (wf3d_color){.rgba = {0.0, 0.0, 0.0, 1.0}};
-    wf3d_color const* mix_color_with_black_array[2] = {NULL, &color_black};
-
     owl_v3f32 opp_side_cross_normal[3];
     owl_v3f32 rel_normal = owl_q32_transform_v3f32(q_rot, triangle->normal);
 
@@ -281,30 +278,8 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                 wf3d_surface surface;
                                 triangle->surface_of(triangle->design_data, &surface, barycentric_coords);
 
-                                float mix_with_black_diffusion[2] = {surface.diffusion, 1.0 - surface.diffusion};
-                                mix_color_with_black_array[0] = &surface.color;
-                                wf3d_color surface_color;
-                                wf3d_color_mix(&surface_color, mix_color_with_black_array, mix_with_black_diffusion, 2);
-
-                                wf3d_color final_color = {.rgba = {0.0, 0.0, 0.0, 0.0}};
-                                if(nb_lightsources == 0)
-                                {
-                                    final_color = surface_color;
-                                }
-                                else
-                                {
-                                    for( unsigned int k = 0 ; k < nb_lightsources ; k++)
-                                    {
-                                        wf3d_color lightsource_color;
-                                        wf3d_lightsource_enlight(lightsource_list + k, &lightsource_color, &surface_color, v_intersection, rel_normal);
-
-                                        for(unsigned int i = 0 ; i < 3 ; i++)
-                                        {
-                                            final_color.rgba[i] += lightsource_color.rgba[i];
-                                        }
-                                    }
-                                    final_color.rgba[3] = surface_color.rgba[3];
-                                }
+                                wf3d_color final_color;
+                                wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, &surface, v_intersection, rel_normal);
 
                                 error = wf3d_Image2d_SetPixel(img_out, x, y, &final_color, depth);
                             }
