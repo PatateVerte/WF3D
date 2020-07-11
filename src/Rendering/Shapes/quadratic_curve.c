@@ -7,6 +7,13 @@
 //
 wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha, wf3d_surface const* surface_data)
 {
+    wf3d_quadratic_curve_set_design(curve, surface_data);
+    return wf3d_quadratic_curve_set_geometry(curve, q_eigenbasis, norminf_filter, norm2_filter, c, a, alpha);
+}
+
+//Set up the geometry of a quadratic curve
+wf3d_quadratic_curve* wf3d_quadratic_curve_set_geometry(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha)
+{
     curve->q_eigenbasis = q_eigenbasis;
 
     curve->norminf_filter = norminf_filter;
@@ -16,8 +23,13 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_
     curve->a = a;
     curve->alpha = alpha;
 
-    curve->surface_data = surface_data;
+    return curve;
+}
 
+//Set up the design of a quadratic curve
+wf3d_quadratic_curve* wf3d_quadratic_curve_set_design(wf3d_quadratic_curve* curve, wf3d_surface const* surface_data)
+{
+    curve->surface_data = surface_data;
     return curve;
 }
 

@@ -52,6 +52,12 @@ typedef struct
 //Set up of a quadratic curve
 wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha, wf3d_surface const* surface_data);
 
+//Set up the geometry of a quadratic curve
+wf3d_quadratic_curve* wf3d_quadratic_curve_set_geometry(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha);
+
+//Set up the design of a quadratic curve
+wf3d_quadratic_curve* wf3d_quadratic_curve_set_design(wf3d_quadratic_curve* curve, wf3d_surface const* surface_data);
+
 //The intersection between a ray and the quadratic curve
 //Return true if the intersection exists and returns the parameter, false otherwise
 //t contains the parameter for the nearest intersection

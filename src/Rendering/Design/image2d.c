@@ -207,3 +207,82 @@ int wf3d_Image2d_WriteInBMPFile(wf3d_Image2d const* img, FILE* bmp_file)
 
     #undef DIB_HEADER_SIZE
 }
+
+#define FXAA_EDGE_THRESHOLD (3.0 / 50.0)
+#define FXAA_EDGE_THRESHOLD_MIN (3.0 / 200.0)
+#define FXAA_SUBPIX 1.0
+#define FXAA_SUBPIX_TRIM 0.25
+#define FXAA_SUBPIX_TRIM_SCALE (1.0/(1.0 - FXAA_SUBPIX_TRIM))
+#define FXAA_SUBPIX_CAP 0.75
+
+//
+wf3d_error wf3d_Image2d_FXAA(wf3d_Image2d* img_out, wf3d_Image2d const* img_src)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    int width = img_out->width;
+    int height = img_out->height;
+
+    float mix_coeff9[9];
+    for(unsigned int k = 0 ; k < 9 ; k++)
+    {
+        mix_coeff9[k] = 1.0 / 9.0;
+    }
+
+    if(width == img_src->width && height == img_src->height)
+    {
+        for(int y = 1 ; y < height - 1 ; y++)
+        {
+            for(int x = 1 ; x < width - 1 ; x++)
+            {
+                size_t pixel_index = wf3d_Image2d_pixel_index(img_src, x, y);
+                float lumaM = wf3d_color_uint8_luminance(img_src->color + pixel_index);
+                float lumaN = wf3d_color_uint8_luminance(img_src->color + wf3d_Image2d_pixel_index(img_src, x, y + 1));
+                float lumaS = wf3d_color_uint8_luminance(img_src->color + wf3d_Image2d_pixel_index(img_src, x, y - 1));
+                float lumaE = wf3d_color_uint8_luminance(img_src->color + wf3d_Image2d_pixel_index(img_src, x + 1, y));
+                float lumaW = wf3d_color_uint8_luminance(img_src->color + wf3d_Image2d_pixel_index(img_src, x - 1, y));
+                float luma_min = fminf(lumaM, fminf(fminf(lumaN, lumaW), fminf(lumaS, lumaE)));
+                float luma_max = fmaxf(lumaM, fmaxf(fmaxf(lumaN, lumaW), fmaxf(lumaS, lumaE)));
+                float range  = luma_max - luma_min;
+
+                if(range > fmaxf(FXAA_EDGE_THRESHOLD_MIN, luma_max * FXAA_EDGE_THRESHOLD))
+                {
+                    float lumaL = 0.25 * (lumaN + lumaS + lumaE + lumaW);
+                    float rangeL = fabsf(lumaL - lumaM);
+                    float blendL = fmaxf(0.0, (rangeL / range) - FXAA_SUBPIX_TRIM) * FXAA_SUBPIX_TRIM_SCALE;
+                    blendL = fminf(FXAA_SUBPIX_CAP, blendL);
+
+                    wf3d_color_uint8 const* pixel_list[9];
+                    for(int j = - 1 ; j <= 1 ; j++)
+                    {
+                        for(int i = - 1 ; i <= 1 ; i++)
+                        {
+                            pixel_list[3 * (j + 1) + (i + 1)] = img_src->color + wf3d_Image2d_pixel_index(img_src, x + i, y + j);
+                        }
+                    }
+
+                    wf3d_color colorM, colorL;
+                    wf3d_color_from_color_uint8(&colorM, img_src->color + pixel_index);
+                    wf3d_color_mix8(&colorL, pixel_list, mix_coeff9, 9);
+
+                    float final_mix_coeff[2] = {1.0 - blendL, blendL};
+                    wf3d_color const* final_mix_color[2] = {&colorM, &colorL};
+                    wf3d_color final_color;
+                    wf3d_color_mix(&final_color, final_mix_color, final_mix_coeff, 2);
+
+                    wf3d_color_uint8_from_color(img_out->color + pixel_index, &final_color);
+                }
+                else
+                {
+                    img_out->color[pixel_index] = img_src->color[pixel_index];
+                }
+            }
+        }
+    }
+    else
+    {
+        error = WF3D_IMAGE_ACCESS_ERROR;
+    }
+
+    return error;
+}

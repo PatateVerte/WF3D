@@ -39,12 +39,13 @@ static inline float wf3d_Image2d_unsafe_Depth(wf3d_Image2d const* img, int x, in
     return img->z_buffer[pixel_index];
 }
 
+//
 wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float z);
 
 //
 wf3d_error wf3d_Image2d_WriteInImgGen(wf3d_Image2d const* img, wf3d_img_gen_interface* img_out);
 
-//
-int wf3d_Image2d_WriteInBMPFile(wf3d_Image2d const* img, FILE* bmp_file);
+//Perform FXAA on an image
+wf3d_error wf3d_Image2d_FXAA(wf3d_Image2d* img_out, wf3d_Image2d const* img_src);
 
 #endif // WF3D_IMAGE2D_H_INCLUDED

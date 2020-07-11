@@ -17,24 +17,31 @@ typedef struct
 
 } wf3d_Ellipsoid;
 
-//Create an sphere
+//Create an ellipsoid
 wf3d_Ellipsoid* wf3d_Ellipsoid_Create(float rx, float ry, float rz, wf3d_surface const* surface);
 
-//
-void wf3d_Ellipsoid_Destroy(wf3d_Ellipsoid* sphere);
+//Updates the three axes
+wf3d_Ellipsoid* wf3d_Ellipsoid_UpdateAxes(wf3d_Ellipsoid* ellipsoid, float rx, float ry, float rz);
+
+//Updates one radius of the ellipsoid
+//Return NULL if axe_index >= 3
+wf3d_Ellipsoid* wf3d_Ellipsoid_UpdateOneAxe(wf3d_Ellipsoid* ellipsoid, unsigned int axe_index, float r);
 
 //
-float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid* sphere);
+void wf3d_Ellipsoid_Destroy(wf3d_Ellipsoid* ellipsoid);
 
 //
-float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid* sphere, owl_v3f32 v_pos);
+float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid* ellipsoid);
 
 //
-float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid* sphere, owl_v3f32 v_pos, owl_q32 q_rot);
+float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos);
+
+//
+float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization function
 //
-wf3d_error wf3d_Ellipsoid_Rasterization(wf3d_Ellipsoid const* sphere, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+wf3d_error wf3d_Ellipsoid_Rasterization(wf3d_Ellipsoid const* ellipsoid, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
 
 

@@ -24,6 +24,15 @@ typedef struct
 wf3d_Cylinder* wf3d_Cylinder_Create(float r, float h, wf3d_surface const* surface_side, wf3d_surface const* surface_extrem);
 
 //
+wf3d_Cylinder* wf3d_Cylinder_UpdateRadiusAndHeight(wf3d_Cylinder* cylinder, float r, float h);
+
+//
+wf3d_Cylinder* wf3d_Cylinder_UpdateRadius(wf3d_Cylinder* cylinder, float r);
+
+//
+wf3d_Cylinder* wf3d_Cylinder_UpdateHeight(wf3d_Cylinder* cylinder, float h);
+
+//
 void wf3d_Cylinder_Destroy(wf3d_Cylinder* cylinder);
 
 //

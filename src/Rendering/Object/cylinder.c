@@ -9,27 +9,10 @@ wf3d_Cylinder* wf3d_Cylinder_Create(float r, float h, wf3d_surface const* surfac
 
     if(cylinder != NULL)
     {
-        float half_h = 0.5 * h;
+        wf3d_quadratic_curve_set_design(&cylinder->side, surface_side);
+        wf3d_quadratic_curve_set_design(&cylinder->extrem, surface_extrem);
 
-        cylinder->r = r;
-        cylinder->half_h = half_h;
-
-        float const delta = 1.0 - (1.0 / ((float)(1<<7)));
-        owl_q32 q_eigenbasis = owl_q32_from_real(1.0);
-
-        owl_v3f32 norminf_filter_side = owl_v3f32_set(1.0 / half_h, delta / r, delta / r);
-        owl_v3f32 norm2_filter_side = owl_v3f32_broadcast(delta / sqrtf(r*r + half_h*half_h));
-        float c_side = - r*r;
-        owl_v3f32 a_side = owl_v3f32_zero();
-        owl_v3f32 alpha_side = owl_v3f32_set(0.0, 1.0, 1.0);
-        wf3d_quadratic_curve_set(&cylinder->side, q_eigenbasis, norminf_filter_side, norm2_filter_side, c_side, a_side, alpha_side, surface_side);
-
-        owl_v3f32 norminf_filter_extrem = owl_v3f32_set(delta / half_h, delta / r, delta / r);
-        owl_v3f32 norm2_filter_extrem = owl_v3f32_set(0.0, 1.0 / r, 1.0 / r);
-        float c_extrem = - half_h * half_h;
-        owl_v3f32 a_extrem = owl_v3f32_zero();
-        owl_v3f32 alpha_extrem = owl_v3f32_set(1.0, 0.0, 0.0);
-        wf3d_quadratic_curve_set(&cylinder->extrem, q_eigenbasis, norminf_filter_extrem, norm2_filter_extrem, c_extrem, a_extrem, alpha_extrem, surface_extrem);
+        wf3d_Cylinder_UpdateRadiusAndHeight(cylinder, r, h);
     }
 
     return cylinder;
@@ -44,6 +27,48 @@ void wf3d_Cylinder_Destroy(wf3d_Cylinder* cylinder)
     {
         free(cylinder);
     }
+}
+
+//
+//
+//
+wf3d_Cylinder* wf3d_Cylinder_UpdateRadiusAndHeight(wf3d_Cylinder* cylinder, float r, float h)
+{
+    float half_h = 0.5 * h;
+
+    cylinder->r = r;
+    cylinder->half_h = half_h;
+
+    float const delta = 1.0 - (1.0 / ((float)(1<<7)));
+    owl_q32 q_eigenbasis = owl_q32_from_real(1.0);
+
+    owl_v3f32 norminf_filter_side = owl_v3f32_set(1.0 / half_h, delta / r, delta / r);
+    owl_v3f32 norm2_filter_side = owl_v3f32_broadcast(delta / sqrtf(r*r + half_h*half_h));
+    float c_side = - r*r;
+    owl_v3f32 a_side = owl_v3f32_zero();
+    owl_v3f32 alpha_side = owl_v3f32_set(0.0, 1.0, 1.0);
+    wf3d_quadratic_curve_set_geometry(&cylinder->side, q_eigenbasis, norminf_filter_side, norm2_filter_side, c_side, a_side, alpha_side);
+
+    owl_v3f32 norminf_filter_extrem = owl_v3f32_set(delta / half_h, delta / r, delta / r);
+    owl_v3f32 norm2_filter_extrem = owl_v3f32_set(0.0, 1.0 / r, 1.0 / r);
+    float c_extrem = - half_h * half_h;
+    owl_v3f32 a_extrem = owl_v3f32_zero();
+    owl_v3f32 alpha_extrem = owl_v3f32_set(1.0, 0.0, 0.0);
+    wf3d_quadratic_curve_set_geometry(&cylinder->extrem, q_eigenbasis, norminf_filter_extrem, norm2_filter_extrem, c_extrem, a_extrem, alpha_extrem);
+
+    return cylinder;
+}
+
+//
+wf3d_Cylinder* wf3d_Cylinder_UpdateRadius(wf3d_Cylinder* cylinder, float r)
+{
+    return wf3d_Cylinder_UpdateRadiusAndHeight(cylinder, r, 2.0 * cylinder->half_h);
+}
+
+//
+wf3d_Cylinder* wf3d_Cylinder_UpdateHeight(wf3d_Cylinder* cylinder, float h)
+{
+    return wf3d_Cylinder_UpdateRadiusAndHeight(cylinder, cylinder->r, h);
 }
 
 //
