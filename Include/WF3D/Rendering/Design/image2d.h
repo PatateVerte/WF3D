@@ -42,8 +42,11 @@ static inline float wf3d_Image2d_unsafe_Depth(wf3d_Image2d const* img, int x, in
 //
 wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float z);
 
-//
+//Write Image2d in a bitmap file
 wf3d_error wf3d_Image2d_WriteInImgGen(wf3d_Image2d const* img, wf3d_img_gen_interface* img_out);
+
+//
+int wf3d_Image2d_WriteInBMPFile(wf3d_Image2d const* img, FILE* bmp_file);
 
 //Perform FXAA on an image
 wf3d_error wf3d_Image2d_FXAA(wf3d_Image2d* img_out, wf3d_Image2d const* img_src);

@@ -78,7 +78,30 @@ float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos)
 //
 float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot)
 {
-    return fmaxf(ellipsoid->r[2], fmaxf(ellipsoid->r[1], ellipsoid->r[0]));
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_setbase_xyz(base_xyz, ellipsoid->r[0], ellipsoid->r[1], ellipsoid->r[2]);
+
+    for(unsigned int j = 0 ; j < 3 ; j++)
+    {
+        base_xyz[j] = owl_q32_transform_v3f32(q_rot, base_xyz[j]);
+    }
+
+    float inf_radius = 0.0;
+    for(float sign_z = -1.0 ; sign_z <= 1.0 ; sign_z += 2.0)
+    {
+        owl_v3f32 center_z = owl_v3f32_add_scalar_mul(v_pos, base_xyz[2], sign_z);
+        for(float sign_y = -1.0 ; sign_y <= 1.0 ; sign_y += 2.0)
+        {
+            owl_v3f32 center_y = owl_v3f32_add_scalar_mul(center_z, base_xyz[1], sign_y);
+            for(float sign_x = -1.0 ; sign_x <= 1.0 ; sign_x += 2.0)
+            {
+                owl_v3f32 vertex = owl_v3f32_add_scalar_mul(center_y, base_xyz[0], sign_x);
+                inf_radius = fmaxf(inf_radius, owl_v3f32_norminf(vertex));
+            }
+        }
+    }
+
+    return inf_radius;
 }
 
 //Rasterization function

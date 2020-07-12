@@ -74,7 +74,7 @@ wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* lightsource
                                       );
     }
 
-    _mm_insert_ps(final_color_rgba, surface_diffusion_color_rgba, 0b11110000);
+    final_color_rgba = _mm_insert_ps(final_color_rgba, surface_diffusion_color_rgba, 0b11110000);
     _mm_storeu_ps(color_ret->rgba, final_color_rgba);
 
     return color_ret;

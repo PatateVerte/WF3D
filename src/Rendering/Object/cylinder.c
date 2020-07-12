@@ -37,7 +37,7 @@ wf3d_Cylinder* wf3d_Cylinder_UpdateRadiusAndHeight(wf3d_Cylinder* cylinder, floa
     float half_h = 0.5 * h;
 
     cylinder->r = r;
-    cylinder->half_h = half_h;
+    cylinder->h = h;
 
     float const delta = 1.0 - (1.0 / ((float)(1<<7)));
     owl_q32 q_eigenbasis = owl_q32_from_real(1.0);
@@ -62,7 +62,7 @@ wf3d_Cylinder* wf3d_Cylinder_UpdateRadiusAndHeight(wf3d_Cylinder* cylinder, floa
 //
 wf3d_Cylinder* wf3d_Cylinder_UpdateRadius(wf3d_Cylinder* cylinder, float r)
 {
-    return wf3d_Cylinder_UpdateRadiusAndHeight(cylinder, r, 2.0 * cylinder->half_h);
+    return wf3d_Cylinder_UpdateRadiusAndHeight(cylinder, r, cylinder->h);
 }
 
 //
@@ -76,7 +76,7 @@ wf3d_Cylinder* wf3d_Cylinder_UpdateHeight(wf3d_Cylinder* cylinder, float h)
 //
 float wf3d_Cylinder_Radius(wf3d_Cylinder* cylinder)
 {
-    return sqrtf(cylinder->r * cylinder->r + cylinder->half_h / cylinder->half_h);
+    return sqrtf(cylinder->r * cylinder->r + 0.25 * cylinder->h * cylinder->h);
 }
 
 //
@@ -84,13 +84,40 @@ float wf3d_Cylinder_Radius(wf3d_Cylinder* cylinder)
 //
 float wf3d_Cylinder_InfRadius(wf3d_Cylinder* cylinder, owl_v3f32 v_pos)
 {
-    return fmaxf(cylinder->r, cylinder->half_h);
+    owl_v3f32 geom_broadcast = owl_v3f32_set(0.5 * cylinder->h, cylinder->r, cylinder->h);
+    return fmaxf(
+                    owl_v3f32_norminf(owl_v3f32_add(v_pos, geom_broadcast)),
+                    owl_v3f32_norminf(owl_v3f32_sub(v_pos, geom_broadcast))
+                 );
 }
 
 //
 float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder* cylinder, owl_v3f32 v_pos, owl_q32 q_rot)
 {
-    return fmaxf(cylinder->r, cylinder->half_h);
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_setbase_xyz(base_xyz, 0.5 * cylinder->h, cylinder->r, cylinder->r);
+
+    for(unsigned int j = 0 ; j < 3 ; j++)
+    {
+        base_xyz[j] = owl_q32_transform_v3f32(q_rot, base_xyz[j]);
+    }
+
+    float inf_radius = 0.0;
+    for(float sign_z = -1.0 ; sign_z <= 1.0 ; sign_z += 2.0)
+    {
+        owl_v3f32 center_z = owl_v3f32_add_scalar_mul(v_pos, base_xyz[2], sign_z);
+        for(float sign_y = -1.0 ; sign_y <= 1.0 ; sign_y += 2.0)
+        {
+            owl_v3f32 center_y = owl_v3f32_add_scalar_mul(center_z, base_xyz[1], sign_y);
+            for(float sign_x = -1.0 ; sign_x <= 1.0 ; sign_x += 2.0)
+            {
+                owl_v3f32 vertex = owl_v3f32_add_scalar_mul(center_y, base_xyz[0], sign_x);
+                inf_radius = fmaxf(inf_radius, owl_v3f32_norminf(vertex));
+            }
+        }
+    }
+
+    return inf_radius;
 }
 
 //Rasterization function

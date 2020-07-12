@@ -16,11 +16,11 @@ typedef struct
     wf3d_quadratic_curve extrem;
 
     float r;
-    float half_h;
+    float h;
 
 } wf3d_Cylinder;
 
-//Create an cylinder
+//Create an cylinder with x as rotation axis
 wf3d_Cylinder* wf3d_Cylinder_Create(float r, float h, wf3d_surface const* surface_side, wf3d_surface const* surface_extrem);
 
 //

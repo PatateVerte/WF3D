@@ -42,11 +42,6 @@ void wf3d_ColoredCube_Destroy(wf3d_ColoredCube* cube)
 //
 float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
 {
-    if(cube == NULL)
-    {
-        return 0.0;
-    }
-
     return 0.5 * M_SQRT3 * cube->side;
 }
 
@@ -55,25 +50,11 @@ float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
 //
 float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
 {
-    if(cube == NULL)
-    {
-        return 0.0;
-    }
-
-    owl_v3f32 base_xyz[3];
-    owl_v3f32_base_xyz(base_xyz, 0.5 * cube->side);
-
-    float inf_radius = 0.0;
-    for(int k = 0 ; k < 3 ; k++)
-    {
-        float const tmp = fmaxf(
-                                    owl_v3f32_norminf( owl_v3f32_add(v_pos, base_xyz[k]) ),
-                                    owl_v3f32_norminf( owl_v3f32_sub(v_pos, base_xyz[k]) )
-                                );
-        inf_radius = fmaxf(inf_radius, tmp);
-    }
-
-    return inf_radius;
+    owl_v3f32 broadcast_half_side = owl_v3f32_broadcast(0.5 * cube->side);
+    return fmaxf(
+                    owl_v3f32_norminf(owl_v3f32_add(v_pos, broadcast_half_side)),
+                    owl_v3f32_norminf(owl_v3f32_sub(v_pos, broadcast_half_side))
+                 );
 }
 
 //
@@ -81,23 +62,27 @@ float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
 //
 float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos, owl_q32 q_rot)
 {
-    if(cube == NULL)
-    {
-        return 0.0;
-    }
-
     owl_v3f32 base_xyz[3];
     owl_v3f32_base_xyz(base_xyz, 0.5 * cube->side);
 
-    float inf_radius = 0.0;
-    for(int k = 0 ; k < 3 ; k++)
+    for(unsigned int j = 0 ; j < 3 ; j++)
     {
-        base_xyz[k] = owl_q32_transform_v3f32(q_rot, base_xyz[k]);
-        float const tmp = fmaxf(
-                                    owl_v3f32_norminf( owl_v3f32_add(v_pos, base_xyz[k]) ),
-                                    owl_v3f32_norminf( owl_v3f32_sub(v_pos, base_xyz[k]) )
-                                );
-        inf_radius = fmaxf(inf_radius, tmp);
+        base_xyz[j] = owl_q32_transform_v3f32(q_rot, base_xyz[j]);
+    }
+
+    float inf_radius = 0.0;
+    for(float sign_z = -1.0 ; sign_z <= 1.0 ; sign_z += 2.0)
+    {
+        owl_v3f32 center_z = owl_v3f32_add_scalar_mul(v_pos, base_xyz[2], sign_z);
+        for(float sign_y = -1.0 ; sign_y <= 1.0 ; sign_y += 2.0)
+        {
+            owl_v3f32 center_y = owl_v3f32_add_scalar_mul(center_z, base_xyz[1], sign_y);
+            for(float sign_x = -1.0 ; sign_x <= 1.0 ; sign_x += 2.0)
+            {
+                owl_v3f32 vertex = owl_v3f32_add_scalar_mul(center_y, base_xyz[0], sign_x);
+                inf_radius = fmaxf(inf_radius, owl_v3f32_norminf(vertex));
+            }
+        }
     }
 
     return inf_radius;
@@ -108,11 +93,6 @@ float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos,
 //
 wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
-    if(cube == NULL)
-    {
-        return WF3D_SUCCESS;
-    }
-
     wf3d_error error = WF3D_SUCCESS;
 
     owl_v3f32 base_xyz[3];
