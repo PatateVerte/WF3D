@@ -64,19 +64,19 @@ wf3d_Ellipsoid* wf3d_Ellipsoid_UpdateOneAxe(wf3d_Ellipsoid* ellipsoid, unsigned 
 }
 
 //
-float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid* ellipsoid)
+float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid const* ellipsoid)
 {
     return fmaxf(ellipsoid->r[2], fmaxf(ellipsoid->r[1], ellipsoid->r[0]));
 }
 
 //
-float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos)
+float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid const* ellipsoid, owl_v3f32 v_pos)
 {
     return fmaxf(ellipsoid->r[2], fmaxf(ellipsoid->r[1], ellipsoid->r[0]));
 }
 
 //
-float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot)
+float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid const* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     owl_v3f32 base_xyz[3];
     owl_v3f32_setbase_xyz(base_xyz, ellipsoid->r[0], ellipsoid->r[1], ellipsoid->r[2]);

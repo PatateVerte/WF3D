@@ -36,13 +36,13 @@ wf3d_Cylinder* wf3d_Cylinder_UpdateHeight(wf3d_Cylinder* cylinder, float h);
 void wf3d_Cylinder_Destroy(wf3d_Cylinder* cylinder);
 
 //
-float wf3d_Cylinder_Radius(wf3d_Cylinder* cylinder);
+float wf3d_Cylinder_Radius(wf3d_Cylinder const* cylinder);
 
 //
-float wf3d_Cylinder_InfRadius(wf3d_Cylinder* cylinder, owl_v3f32 v_pos);
+float wf3d_Cylinder_InfRadius(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos);
 
 //
-float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder* cylinder, owl_v3f32 v_pos, owl_q32 q_rot);
+float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization function
 //

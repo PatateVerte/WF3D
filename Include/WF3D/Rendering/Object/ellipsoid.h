@@ -31,13 +31,13 @@ wf3d_Ellipsoid* wf3d_Ellipsoid_UpdateOneAxe(wf3d_Ellipsoid* ellipsoid, unsigned 
 void wf3d_Ellipsoid_Destroy(wf3d_Ellipsoid* ellipsoid);
 
 //
-float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid* ellipsoid);
+float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid const* ellipsoid);
 
 //
-float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos);
+float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid const* ellipsoid, owl_v3f32 v_pos);
 
 //
-float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot);
+float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid const* ellipsoid, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization function
 //

@@ -74,7 +74,7 @@ wf3d_Cylinder* wf3d_Cylinder_UpdateHeight(wf3d_Cylinder* cylinder, float h)
 //
 //
 //
-float wf3d_Cylinder_Radius(wf3d_Cylinder* cylinder)
+float wf3d_Cylinder_Radius(wf3d_Cylinder const* cylinder)
 {
     return sqrtf(cylinder->r * cylinder->r + 0.25 * cylinder->h * cylinder->h);
 }
@@ -82,7 +82,7 @@ float wf3d_Cylinder_Radius(wf3d_Cylinder* cylinder)
 //
 //
 //
-float wf3d_Cylinder_InfRadius(wf3d_Cylinder* cylinder, owl_v3f32 v_pos)
+float wf3d_Cylinder_InfRadius(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos)
 {
     owl_v3f32 geom_broadcast = owl_v3f32_set(0.5 * cylinder->h, cylinder->r, cylinder->h);
     return fmaxf(
@@ -92,7 +92,7 @@ float wf3d_Cylinder_InfRadius(wf3d_Cylinder* cylinder, owl_v3f32 v_pos)
 }
 
 //
-float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder* cylinder, owl_v3f32 v_pos, owl_q32 q_rot)
+float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     owl_v3f32 base_xyz[3];
     owl_v3f32_setbase_xyz(base_xyz, 0.5 * cylinder->h, cylinder->r, cylinder->r);

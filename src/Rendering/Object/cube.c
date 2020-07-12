@@ -40,7 +40,7 @@ void wf3d_ColoredCube_Destroy(wf3d_ColoredCube* cube)
 //
 //
 //
-float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
+float wf3d_ColoredCube_Radius(wf3d_ColoredCube const* cube)
 {
     return 0.5 * M_SQRT3 * cube->side;
 }
@@ -48,7 +48,7 @@ float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube)
 //
 //
 //
-float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
+float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube const* cube, owl_v3f32 v_pos)
 {
     owl_v3f32 broadcast_half_side = owl_v3f32_broadcast(0.5 * cube->side);
     return fmaxf(
@@ -60,7 +60,7 @@ float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos)
 //
 //
 //
-float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos, owl_q32 q_rot)
+float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube const* cube, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     owl_v3f32 base_xyz[3];
     owl_v3f32_base_xyz(base_xyz, 0.5 * cube->side);

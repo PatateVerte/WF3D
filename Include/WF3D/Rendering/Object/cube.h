@@ -25,13 +25,13 @@ wf3d_ColoredCube* wf3d_ColoredCube_Create(float side, wf3d_surface const* const*
 void wf3d_ColoredCube_Destroy(wf3d_ColoredCube* cube);
 
 //
-float wf3d_ColoredCube_Radius(wf3d_ColoredCube* cube);
+float wf3d_ColoredCube_Radius(wf3d_ColoredCube const* cube);
 
 //
-float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube* cube, owl_v3f32 v_pos);
+float wf3d_ColoredCube_InfRadius(wf3d_ColoredCube const* cube, owl_v3f32 v_pos);
 
 //
-float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube* cube, owl_v3f32 v_pos, owl_q32 q_rot);
+float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube const* cube, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization function
 //
