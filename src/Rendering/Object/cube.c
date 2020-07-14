@@ -4,8 +4,6 @@
 
 #include <math.h>
 
-#define M_SQRT3     1.73205080756887729352
-
 //Create a coloured cube
 //surface_list[6]
 //
@@ -42,7 +40,7 @@ void wf3d_ColoredCube_Destroy(wf3d_ColoredCube* cube)
 //
 float wf3d_ColoredCube_Radius(wf3d_ColoredCube const* cube)
 {
-    return 0.5 * M_SQRT3 * cube->side;
+    return 0.5 * OWL_SQRT3 * cube->side;
 }
 
 //

@@ -140,6 +140,8 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
     owl_v3f32 inf_vect_eigenbasis = owl_v3f32_comp_div(owl_v3f32_broadcast(1.0), curve->norminf_filter);
     if(isfinite(owl_v3f32_dot(inf_vect_eigenbasis, inf_vect_eigenbasis)) != 0)
     {
+        float min_depth = INFINITY;
+
         float y_min_f = cam->tan_h_half_opening_angle;
         float y_max_f = 0.0;
         float x_min_f = cam->tan_v_half_opening_angle;
@@ -167,17 +169,10 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
                     float x_f = 0.0;
                     float y_f = 0.0;
                     float z_f = owl_v3f32_unsafe_get_component(v_corner, 2);
-                    if(z_f < -cam->near_clipping_distance)
-                    {
-                        x_f = -owl_v3f32_unsafe_get_component(v_corner, 0) / z_f;
-                        y_f = -owl_v3f32_unsafe_get_component(v_corner, 1) / z_f;
-                    }
-                    else
-                    {
-                        owl_v3f32 v_corner_lim = owl_v3f32_comp_div(v_corner, owl_v3f32_broadcast(-cam->near_clipping_distance));
-                        x_f = owl_v3f32_unsafe_get_component(v_corner_lim, 0);
-                        y_f = owl_v3f32_unsafe_get_component(v_corner_lim, 1);
-                    }
+
+                    min_depth = fminf(min_depth, -z_f);
+                    x_f = -owl_v3f32_unsafe_get_component(v_corner, 0) / z_f;
+                    y_f = -owl_v3f32_unsafe_get_component(v_corner, 1) / z_f;
 
                     y_min_f = fminf(y_min_f, y_f);
                     y_max_f = fmaxf(y_max_f, y_f);
@@ -187,25 +182,28 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
             }
         }
 
-        y_min = (int)roundf(fmaxf(0.0, y_min_f * y_scale + half_height));
-        if(y_min < 0)
+        if(min_depth >= cam->near_clipping_distance)
         {
-            y_min = 0;
-        }
-        y_max = (int)roundf(fminf(2.0 * half_height, y_max_f * y_scale + half_height));
-        if(y_max > img_out->height)
-        {
-            y_max = img_out->height;
-        }
-        x_min = (int)roundf(fmaxf(0.0, x_min_f * x_scale + half_width));
-        if(x_min < 0)
-        {
-            x_min = 0;
-        }
-        x_max = (int)roundf(fminf(2.0 * half_width, x_max_f * x_scale + half_width));
-        if(x_max > img_out->width)
-        {
-            x_max = img_out->width;
+            y_min = (int)roundf(fmaxf(0.0, y_min_f * y_scale + half_height));
+            if(y_min < 0)
+            {
+                y_min = 0;
+            }
+            y_max = (int)roundf(fminf(2.0 * half_height, y_max_f * y_scale + half_height));
+            if(y_max > img_out->height)
+            {
+                y_max = img_out->height;
+            }
+            x_min = (int)roundf(fmaxf(0.0, x_min_f * x_scale + half_width));
+            if(x_min < 0)
+            {
+                x_min = 0;
+            }
+            x_max = (int)roundf(fminf(2.0 * half_width, x_max_f * x_scale + half_width));
+            if(x_max > img_out->width)
+            {
+                x_max = img_out->width;
+            }
         }
     }
 
