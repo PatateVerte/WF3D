@@ -106,7 +106,7 @@ float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid const* ellipsoid, owl_v3f32
 
 //Rasterization function
 //
-wf3d_error wf3d_Ellipsoid_Rasterization(wf3d_Ellipsoid const* ellipsoid, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_Ellipsoid_Rasterization(wf3d_Ellipsoid const* ellipsoid, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     return wf3d_quadratic_curve_Rasterization(&ellipsoid->curve, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
 }

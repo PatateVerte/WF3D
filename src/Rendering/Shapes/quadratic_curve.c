@@ -120,22 +120,22 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
 //
 //
 //
-wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     wf3d_error error = WF3D_SUCCESS;
 
-    float half_height = 0.5 * (float)img_out->height;
-    float half_width = 0.5 * (float)img_out->width;
+    float half_height = 0.5 * (float)img_out->img2d->height;
+    float half_width = 0.5 * (float)img_out->img2d->width;
 
     owl_q32 q_rot_eigenbasis = owl_q32_mul(q_rot, curve->q_eigenbasis);
 
     float const x_scale = half_width / cam->tan_h_half_opening_angle;
     float const y_scale = half_height / cam->tan_v_half_opening_angle;
 
-    int y_min = 0;
-    int y_max = img_out->height;
-    int x_min = 0;
-    int x_max = img_out->width;
+    int y_min = img_out->y_min;
+    int y_max = img_out->y_max;
+    int x_min = img_out->x_min;
+    int x_max = img_out->x_max;
 
     owl_v3f32 inf_vect_eigenbasis = owl_v3f32_comp_div(owl_v3f32_broadcast(1.0), curve->norminf_filter);
     if(isfinite(owl_v3f32_dot(inf_vect_eigenbasis, inf_vect_eigenbasis)) != 0)
@@ -185,24 +185,24 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
         if(min_depth >= cam->near_clipping_distance)
         {
             y_min = (int)roundf(fmaxf(0.0, y_min_f * y_scale + half_height));
-            if(y_min < 0)
+            if(y_min < img_out->y_min)
             {
-                y_min = 0;
+                y_min = img_out->y_min;
             }
             y_max = (int)roundf(fminf(2.0 * half_height, y_max_f * y_scale + half_height));
-            if(y_max > img_out->height)
+            if(y_max > img_out->y_max)
             {
-                y_max = img_out->height;
+                y_max = img_out->y_max;
             }
             x_min = (int)roundf(fmaxf(0.0, x_min_f * x_scale + half_width));
-            if(x_min < 0)
+            if(x_min < img_out->x_min)
             {
-                x_min = 0;
+                x_min = img_out->x_min;
             }
             x_max = (int)roundf(fminf(2.0 * half_width, x_max_f * x_scale + half_width));
-            if(x_max > img_out->width)
+            if(x_max > img_out->x_max)
             {
-                x_max = img_out->width;
+                x_max = img_out->x_max;
             }
         }
     }
@@ -223,7 +223,7 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
             {
                 owl_v3f32 v_intersection = owl_v3f32_scalar_mul(v_dir, t);
                 float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
-                if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out, x, y))
+                if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out->img2d, x, y))
                 {
                     owl_v3f32 v_intersection_eigenbasis = owl_q32_transform_v3f32(
                                                                                     owl_q32_conj(q_rot_eigenbasis),
@@ -239,7 +239,7 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
                     wf3d_color final_color;
                     wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, curve->surface_data, v_intersection, normal);
 
-                    error = wf3d_Image2d_SetPixel(img_out, x, y, &final_color, depth);
+                    error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
                 }
             }
         }

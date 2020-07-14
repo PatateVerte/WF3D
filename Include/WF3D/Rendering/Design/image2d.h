@@ -51,4 +51,16 @@ int wf3d_Image2d_WriteInBMPFile(wf3d_Image2d const* img, FILE* bmp_file);
 //Perform FXAA on an image
 wf3d_error wf3d_Image2d_FXAA(wf3d_Image2d* img_out, wf3d_Image2d const* img_src);
 
+//[x_min,x_max[
+//[y_min,y_max[
+typedef struct
+{
+    wf3d_Image2d* img2d;
+    int x_min;
+    int x_max;
+    int y_min;
+    int y_max;
+
+} wf3d_image2d_rectangle;
+
 #endif // WF3D_IMAGE2D_H_INCLUDED

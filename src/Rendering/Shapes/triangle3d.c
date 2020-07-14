@@ -90,7 +90,7 @@ wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_t
 //
 //
 //
-wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_Image2d* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(triangle == NULL)
     {
@@ -99,8 +99,8 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
     wf3d_error error = WF3D_SUCCESS;
 
-    float half_width = 0.5 * (float)img_out->width;
-    float half_height = 0.5 * (float)img_out->height;
+    float half_width = 0.5 * (float)img_out->img2d->width;
+    float half_height = 0.5 * (float)img_out->img2d->height;
 
     float const x_scale = half_width / cam->tan_h_half_opening_angle;
     float const y_scale = half_height / cam->tan_v_half_opening_angle;
@@ -190,14 +190,14 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
             if(x_gen_min_f < 2.0 * half_width && x_gen_max_f >= 0.0)
             {
                 int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
-                if(y_min < 0)
+                if(y_min < img_out->y_min)
                 {
-                    y_min = 0;
+                    y_min = img_out->y_min;
                 }
                 int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
-                if(y_max > img_out->height)
+                if(y_max > img_out->y_max)
                 {
-                    y_max = img_out->height;
+                    y_max = img_out->y_max;
                 }
 
 
@@ -223,19 +223,19 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                     }
 
                     int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
-                    if(x_min < 0)
+                    if(x_min < img_out->x_min)
                     {
-                        x_min = 0;
+                        x_min = img_out->x_min;
                     }
                     int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
-                    if(x_max > img_out->width)
+                    if(x_max > img_out->x_max)
                     {
-                        x_max = img_out->width;
+                        x_max = img_out->x_max;
                     }
 
                     for(int x = x_min ; x < x_max && error == WF3D_SUCCESS ; x++)
                     {
-                        if(triangle_min_depth <= wf3d_Image2d_unsafe_Depth(img_out, x, y))
+                        if(triangle_min_depth <= wf3d_Image2d_unsafe_Depth(img_out->img2d, x, y))
                         {
                             float x_f = 0.5f + (float)x;
 
@@ -253,7 +253,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
 
                             float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
 
-                            if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out, x, y))
+                            if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out->img2d, x, y))
                             {
                                 //Gets barycentric coordinates
                                 float barycentric_coords[3];
@@ -281,7 +281,7 @@ wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_I
                                 wf3d_color final_color;
                                 wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, &surface, v_intersection, rel_normal);
 
-                                error = wf3d_Image2d_SetPixel(img_out, x, y, &final_color, depth);
+                                error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
                             }
                         }
                     }
