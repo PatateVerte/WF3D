@@ -57,9 +57,9 @@ wf3d_PolygonMesh* wf3d_PolygonMesh_UpdateRadius(wf3d_PolygonMesh* obj)
     {
         float square_radius = 0.0;
 
-        for(int fi = 0 ; fi < obj->nb_faces ; fi++)
+        for(unsigned int fi = 0 ; fi < obj->nb_faces ; fi++)
         {
-            for(int k = 0 ; k < 3 ; k++)
+            for(unsigned int k = 0 ; k < 3 ; k++)
             {
                 owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
                 float tmp = owl_v3f32_dot(vertex, vertex);
@@ -112,9 +112,9 @@ float wf3d_PolygonMesh_InfRadius(wf3d_PolygonMesh const* obj, owl_v3f32 v_pos)
 {
     float inf_radius = 0.0;
 
-    for(int fi = 0 ; fi < obj->nb_faces ; fi++)
+    for(unsigned int fi = 0 ; fi < obj->nb_faces ; fi++)
     {
-        for(int k = 0 ; k < 3 ; k++)
+        for(unsigned int k = 0 ; k < 3 ; k++)
         {
             owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
             float tmp = owl_v3f32_norminf( owl_v3f32_add(vertex, v_pos) );
@@ -132,9 +132,9 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh const* obj, owl_v3f32 v
 {
     float inf_radius = 0.0;
 
-    for(int fi = 0 ; fi < obj->nb_faces ; fi++)
+    for(unsigned int fi = 0 ; fi < obj->nb_faces ; fi++)
     {
-        for(int k = 0 ; k < 3 ; k++)
+        for(unsigned int k = 0 ; k < 3 ; k++)
         {
             owl_v3f32 vertex = obj->local_face_list[fi].vertex_list[k];
             float tmp = owl_v3f32_norminf( owl_v3f32_add( owl_q32_transform_v3f32(q_rot, vertex), v_pos) );
@@ -157,9 +157,29 @@ wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_imag
 
     wf3d_error error = WF3D_SUCCESS;
 
-    for(int fi = 0 ; fi < obj->nb_faces && error == WF3D_SUCCESS ; fi++)
+    for(unsigned int fi = 0 ; fi < obj->nb_faces && error == WF3D_SUCCESS ; fi++)
     {
         error = wf3d_triangle3d_Rasterization(obj->local_face_list + fi, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+    }
+
+    return error;
+}
+
+//
+//
+//
+wf3d_error wf3d_PolygonMesh_Rasterization2(wf3d_PolygonMesh const* obj, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+{
+    if(obj == NULL)
+    {
+        return WF3D_SUCCESS;
+    }
+
+    wf3d_error error = WF3D_SUCCESS;
+
+    for(unsigned int fi = 0 ; fi < obj->nb_faces && error == WF3D_SUCCESS ; fi++)
+    {
+        error = wf3d_triangle3d_Rasterization2(obj->local_face_list + fi, img_out, v_pos, q_rot, cam);
     }
 
     return error;

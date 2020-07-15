@@ -45,8 +45,10 @@ float wf3d_Cylinder_InfRadius(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos);
 float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization function
-//
 wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+
+//Rasterization2 function
+wf3d_error wf3d_Cylinder_Rasterization2(wf3d_Cylinder const* cylinder, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
 
 

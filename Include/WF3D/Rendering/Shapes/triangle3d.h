@@ -56,6 +56,9 @@ wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_t
 //Rasterization of a triangle
 wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
+//Rasterization2 of a triangle
+wf3d_error wf3d_triangle3d_Rasterization2(wf3d_triangle3d const* triangle, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+
 typedef struct
 {
     wf3d_surface const* vertex_surface_list[3];

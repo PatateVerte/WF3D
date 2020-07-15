@@ -145,3 +145,63 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_ima
 
     return error;
 }
+
+//Rasterization2 function
+//
+//
+wf3d_error wf3d_ColoredCube_Rasterization2(wf3d_ColoredCube const* cube, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_base_xyz(base_xyz, 1.0f);
+
+    owl_v3f32 adapted_base_xyz[3];
+    owl_v3f32_base_xyz(adapted_base_xyz, 0.5f * cube->side);
+
+    for(int bk = 0 ; bk < 3 && error == WF3D_SUCCESS ; bk++)
+    {
+        wf3d_triangle3d face_piece[2];
+
+        owl_v3f32 const comple_base[2] =
+        {
+            adapted_base_xyz[(bk + 1) % 3],
+            adapted_base_xyz[(bk + 2) % 3]
+        };
+        owl_v3f32 vertex_list[4] =
+        {
+            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
+            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) )
+        };
+
+        wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
+        wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
+        error = wf3d_triangle3d_Rasterization2(face_piece + 0, img_out, v_pos, q_rot, cam);
+        if(error == WF3D_SUCCESS)
+        {
+            error = wf3d_triangle3d_Rasterization2(face_piece + 1, img_out, v_pos, q_rot, cam);
+
+            if(error == WF3D_SUCCESS)
+            {
+                face_piece[0].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
+                face_piece[0].design_data = cube->surface_list[3 + bk];
+                face_piece[1].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
+                face_piece[1].design_data = cube->surface_list[3 + bk];
+                owl_v3f32 v_pos_behind = owl_v3f32_add_scalar_mul(
+                                                                        v_pos,
+                                                                        owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),
+                                                                        -2.0
+                                                                      );
+                error = wf3d_triangle3d_Rasterization2(face_piece + 0, img_out, v_pos_behind, q_rot, cam);
+                if(error == WF3D_SUCCESS)
+                {
+                    error = wf3d_triangle3d_Rasterization2(face_piece + 1, img_out, v_pos_behind, q_rot, cam);
+                }
+            }
+        }
+    }
+
+    return error;
+}

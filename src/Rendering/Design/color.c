@@ -10,7 +10,7 @@ wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* const* col
 {
     __m128 acc_f = _mm_setzero_ps();
 
-    for(int k = 0 ; k < nb_colors ; k++)
+    for(unsigned int k = 0 ; k < nb_colors ; k++)
     {
         acc_f = _mm_add_ps(
                             acc_f,
@@ -28,7 +28,7 @@ wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* con
 {
     __m128 acc_f = _mm_setzero_ps();
 
-    for(int k = 0 ; k < nb_colors ; k++)
+    for(unsigned int k = 0 ; k < nb_colors ; k++)
     {
         int32_t color_i = (color_list[k]->rgba[3] << 24) | (color_list[k]->rgba[2] << 16) | (color_list[k]->rgba[1] << 8) | (color_list[k]->rgba[0] << 0);
         __m128i color_vect = _mm_cvtsi32_si128(color_i);

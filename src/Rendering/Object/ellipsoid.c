@@ -63,6 +63,17 @@ wf3d_Ellipsoid* wf3d_Ellipsoid_UpdateOneAxe(wf3d_Ellipsoid* ellipsoid, unsigned 
     }
 }
 
+//Reverse the normal
+//
+//
+wf3d_Ellipsoid* wf3d_Ellipsoid_ReverseNormal(wf3d_Ellipsoid* ellipsoid)
+{
+    ellipsoid->curve.alpha = owl_v3f32_sub(owl_v3f32_zero(), ellipsoid->curve.alpha);
+    ellipsoid->curve.c = -ellipsoid->curve.c;
+
+    return ellipsoid;
+}
+
 //
 float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid const* ellipsoid)
 {
@@ -72,7 +83,11 @@ float wf3d_Ellipsoid_Radius(wf3d_Ellipsoid const* ellipsoid)
 //
 float wf3d_Ellipsoid_InfRadius(wf3d_Ellipsoid const* ellipsoid, owl_v3f32 v_pos)
 {
-    return fmaxf(ellipsoid->r[2], fmaxf(ellipsoid->r[1], ellipsoid->r[0]));
+    owl_v3f32 r_vec = owl_v3f32_set(ellipsoid->r[0], ellipsoid->r[1], ellipsoid->r[2]);
+    return fmaxf(
+                    owl_v3f32_norminf(owl_v3f32_add(v_pos, r_vec)),
+                    owl_v3f32_norminf(owl_v3f32_sub(v_pos, r_vec))
+                 );
 }
 
 //
@@ -106,7 +121,16 @@ float wf3d_Ellipsoid_InfRadiusWithRot(wf3d_Ellipsoid const* ellipsoid, owl_v3f32
 
 //Rasterization function
 //
+//
 wf3d_error wf3d_Ellipsoid_Rasterization(wf3d_Ellipsoid const* ellipsoid, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     return wf3d_quadratic_curve_Rasterization(&ellipsoid->curve, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+}
+
+//Rasterization2 function
+//
+//
+wf3d_error wf3d_Ellipsoid_Rasterization2(wf3d_Ellipsoid const* ellipsoid, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+{
+    return wf3d_quadratic_curve_Rasterization2(&ellipsoid->curve, img_out, v_pos, q_rot, cam);
 }

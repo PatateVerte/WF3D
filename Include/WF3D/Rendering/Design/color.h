@@ -29,7 +29,8 @@ typedef struct
 
 static inline wf3d_color_uint8* wf3d_color_uint8_from_color(wf3d_color_uint8* color8, wf3d_color const* color)
 {
-    __m128i color_vect = _mm_cvtps_epi32( _mm_mul_ps(_mm_loadu_ps(color->rgba), _mm_set1_ps(255.0)) );
+    __m128 broadcast255 = _mm_set1_ps(255.0);
+    __m128i color_vect = _mm_cvtps_epi32( _mm_min_ps(_mm_mul_ps(_mm_loadu_ps(color->rgba), broadcast255), broadcast255) );
     color_vect = _mm_packus_epi32(color_vect, color_vect);
     color_vect = _mm_packus_epi16(color_vect, color_vect);
 

@@ -13,20 +13,30 @@
 wf3d_Image2d* wf3d_Image2d_Create(int width, int height)
 {
     wf3d_Image2d* img = malloc(sizeof(*img));
-    size_t nb_pixel = (size_t)width * (size_t)height;
+    size_t nb_pixels = (size_t)width * (size_t)height;
 
     if(img != NULL)
     {
         img->width = width;
         img->height = height;
 
-        img->color = malloc(nb_pixel * sizeof(*(img->color)));
-        img->z_buffer = malloc(nb_pixel * sizeof(*(img->z_buffer)));
+        img->color = malloc(nb_pixels * sizeof(*(img->color)));
+        img->depth_buffer = malloc(nb_pixels * sizeof(*(img->depth_buffer)));
 
-        if(nb_pixel > 0 && (img->color == NULL || img->z_buffer == NULL))
+        if(nb_pixels > 0 && (img->color == NULL || img->depth_buffer == NULL))
         {
             wf3d_Image2d_Destroy(img);
             img = NULL;
+        }
+        else
+        {
+            wf3d_color_uint8 background_color8 = (wf3d_color_uint8){.rgba = {0.0, 0.0, 0.0, 1.0}};
+
+            for(size_t k = 0 ; k < nb_pixels ; k++)
+            {
+                img->color[k] = background_color8;
+                img->depth_buffer[k] = INFINITY;
+            }
         }
     }
 
@@ -41,7 +51,7 @@ void wf3d_Image2d_Destroy(wf3d_Image2d* img)
     if(img != NULL)
     {
         free(img->color);
-        free(img->z_buffer);
+        free(img->depth_buffer);
 
         free(img);
     }
@@ -52,18 +62,15 @@ void wf3d_Image2d_Destroy(wf3d_Image2d* img)
 //
 wf3d_Image2d* wf3d_Image2d_Clear(wf3d_Image2d* img, wf3d_color const* background_color)
 {
-    if(img != NULL)
+    size_t nb_pixels = (size_t)img->width *  (size_t)img->height;
+
+    wf3d_color_uint8 background_color8;
+    wf3d_color_uint8_from_color(&background_color8, background_color);
+
+    for(size_t k = 0 ; k < nb_pixels ; k++)
     {
-        size_t nb_pixels = (size_t)img->width *  (size_t)img->height;
-
-        wf3d_color_uint8 background_color8;
-        wf3d_color_uint8_from_color(&background_color8, background_color);
-
-        for(size_t k = 0 ; k < nb_pixels ; k++)
-        {
-            img->color[k] = background_color8;
-            img->z_buffer[k] = INFINITY;
-        }
+        img->color[k] = background_color8;
+        img->depth_buffer[k] = INFINITY;
     }
 
     return img;
@@ -72,29 +79,26 @@ wf3d_Image2d* wf3d_Image2d_Clear(wf3d_Image2d* img, wf3d_color const* background
 //
 //
 //
-wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float z)
+/*wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float z)
 {
     wf3d_error error = WF3D_SUCCESS;
 
-    if(img != NULL)
+    if(x >= 0 && x < img->width && y >= 0 && y < img->height)
     {
-        if(x >= 0 && x < img->width && y >= 0 && y < img->height)
+        size_t pixel_index = wf3d_Image2d_pixel_index(img, x, y);
+        if(z <= img->depth_buffer[pixel_index])
         {
-            size_t pixel_index = wf3d_Image2d_pixel_index(img, x, y);
-            if(z <= img->z_buffer[pixel_index])
-            {
-                wf3d_color_uint8_from_color(img->color + pixel_index, color);
-                img->z_buffer[pixel_index] = z;
-            }
+            wf3d_color_uint8_from_color(img->color + pixel_index, color);
+            img->depth_buffer[pixel_index] = z;
         }
-        else
-        {
-            error = WF3D_IMAGE_ACCESS_ERROR;
-        }
+    }
+    else
+    {
+        error = WF3D_IMAGE_ACCESS_ERROR;
     }
 
     return error;
-}
+}*/
 
 //
 //

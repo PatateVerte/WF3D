@@ -122,6 +122,7 @@ float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_
 
 //Rasterization function
 //
+//
 wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     wf3d_error error = WF3D_SUCCESS;
@@ -130,6 +131,22 @@ wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image
     if(error == WF3D_SUCCESS)
     {
         error = wf3d_quadratic_curve_Rasterization(&cylinder->extrem, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+    }
+
+    return error;
+}
+
+//Rasterization2 function
+//
+//
+wf3d_error wf3d_Cylinder_Rasterization2(wf3d_Cylinder const* cylinder, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    error = wf3d_quadratic_curve_Rasterization2(&cylinder->side, img_out, v_pos, q_rot, cam);
+    if(error == WF3D_SUCCESS)
+    {
+        error = wf3d_quadratic_curve_Rasterization2(&cylinder->extrem, img_out, v_pos, q_rot, cam);
     }
 
     return error;

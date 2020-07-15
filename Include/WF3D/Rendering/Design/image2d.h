@@ -14,7 +14,7 @@ typedef struct
     int height;
 
     wf3d_color_uint8* color;
-    float* z_buffer;
+    float* depth_buffer;
 
 } wf3d_Image2d;
 
@@ -36,11 +36,28 @@ static inline size_t wf3d_Image2d_pixel_index(wf3d_Image2d const* img, int x, in
 static inline float wf3d_Image2d_unsafe_Depth(wf3d_Image2d const* img, int x, int y)
 {
     size_t pixel_index = wf3d_Image2d_pixel_index(img, x, y);
-    return img->z_buffer[pixel_index];
+    return img->depth_buffer[pixel_index];
 }
 
 //
-wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float z);
+static inline wf3d_error wf3d_Image2d_SetPixel(wf3d_Image2d* img, int x, int y, wf3d_color const* color, float depth)
+{
+    wf3d_error error = WF3D_SUCCESS;
+
+    if(x >= 0 && x < img->width && y >= 0 && y < img->height)
+    {
+        size_t pixel_index = wf3d_Image2d_pixel_index(img, x, y);
+
+        wf3d_color_uint8_from_color(img->color + pixel_index, color);
+        img->depth_buffer[pixel_index] = depth;
+    }
+    else
+    {
+        error = WF3D_IMAGE_ACCESS_ERROR;
+    }
+
+    return error;
+}
 
 //Write Image2d in a bitmap file
 wf3d_error wf3d_Image2d_WriteInImgGen(wf3d_Image2d const* img, wf3d_img_gen_interface* img_out);
@@ -56,6 +73,7 @@ wf3d_error wf3d_Image2d_FXAA(wf3d_Image2d* img_out, wf3d_Image2d const* img_src)
 typedef struct
 {
     wf3d_Image2d* img2d;
+
     int x_min;
     int x_max;
     int y_min;
