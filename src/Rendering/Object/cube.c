@@ -86,6 +86,72 @@ float wf3d_ColoredCube_InfRadiusWithRot(wf3d_ColoredCube const* cube, owl_v3f32 
     return inf_radius;
 }
 
+//
+//
+//
+bool wf3d_ColoredCube_NearestIntersectionWithRay(wf3d_ColoredCube const* cube, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret)
+{
+    bool intersection_found = false;
+    float t = t_max;
+
+    owl_v3f32 base_xyz[3];
+    owl_v3f32_base_xyz(base_xyz, 1.0f);
+
+    owl_v3f32 adapted_base_xyz[3];
+    owl_v3f32_base_xyz(adapted_base_xyz, 0.5f * cube->side);
+
+    for(int bk = 0 ; bk < 3 ; bk++)
+    {
+        owl_v3f32 const comple_base[2] =
+        {
+            adapted_base_xyz[(bk + 1) % 3],
+            adapted_base_xyz[(bk + 2) % 3]
+        };
+
+        for(float sign_face = -1.0 ; sign_face <= 1.0 ; sign_face += 2.0)
+        {
+            wf3d_triangle3d face_piece;
+
+            face_piece.surface_of = &wf3d_triangle3d_MonoColorSurfaceCallback;
+            face_piece.design_data = cube->surface_list[3*((int)(1.0 - sign_face) / 2) + bk];
+
+            face_piece.normal = owl_v3f32_scalar_mul(base_xyz[bk], sign_face);
+            face_piece.vertex_list[0] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_add(comple_base[0], comple_base[1]),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            face_piece.vertex_list[1] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_scalar_mul(owl_v3f32_add(comple_base[0], comple_base[1]), -1.0),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            for(float sign_corner = -1.0 ; sign_corner <= 1.0 ; sign_corner += 2.0)
+            {
+                face_piece.vertex_list[2] = owl_v3f32_add_scalar_mul(
+                                                                        owl_v3f32_add(
+                                                                                        owl_v3f32_scalar_mul(comple_base[0], sign_corner),
+                                                                                        owl_v3f32_scalar_mul(comple_base[1], -sign_corner)
+                                                                                      ),
+                                                                        adapted_base_xyz[bk],
+                                                                        sign_face
+                                                                     );
+                intersection_found = wf3d_triangle3d_NearestIntersectionWithRay(&face_piece, v_pos, q_rot, ray_origin, ray_dir, t_min, t, &t, normal_ret, surface_ret) || intersection_found;
+            }
+        }
+    }
+
+    if(intersection_found)
+    {
+        if(t_ret != NULL)
+        {
+            *t_ret = t;
+        }
+    }
+
+    return intersection_found;
+}
+
 //Rasterization function
 //
 //
@@ -101,44 +167,41 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_ima
 
     for(int bk = 0 ; bk < 3 && error == WF3D_SUCCESS ; bk++)
     {
-        wf3d_triangle3d face_piece[2];
-
         owl_v3f32 const comple_base[2] =
         {
             adapted_base_xyz[(bk + 1) % 3],
             adapted_base_xyz[(bk + 2) % 3]
         };
-        owl_v3f32 vertex_list[4] =
-        {
-            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) )
-        };
 
-        wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
-        wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
-        error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
-        if(error == WF3D_SUCCESS)
+        for(float sign_face = -1.0 ; sign_face <= 1.0 && error == WF3D_SUCCESS ; sign_face += 2.0)
         {
-            error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+            wf3d_triangle3d face_piece;
 
-            if(error == WF3D_SUCCESS)
+            face_piece.surface_of = &wf3d_triangle3d_MonoColorSurfaceCallback;
+            face_piece.design_data = cube->surface_list[3*((int)(1.0 - sign_face) / 2) + bk];
+
+            face_piece.normal = owl_v3f32_scalar_mul(base_xyz[bk], sign_face);
+            face_piece.vertex_list[0] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_add(comple_base[0], comple_base[1]),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            face_piece.vertex_list[1] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_scalar_mul(owl_v3f32_add(comple_base[0], comple_base[1]), -1.0),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            for(float sign_corner = -1.0 ; sign_corner <= 1.0 && error == WF3D_SUCCESS ; sign_corner += 2.0)
             {
-                face_piece[0].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[0].design_data = cube->surface_list[3 + bk];
-                face_piece[1].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[1].design_data = cube->surface_list[3 + bk];
-                owl_v3f32 v_pos_behind = owl_v3f32_add_scalar_mul(
-                                                                        v_pos,
-                                                                        owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),
-                                                                        -2.0
-                                                                      );
-                error = wf3d_triangle3d_Rasterization(face_piece + 0, img_out, lightsource_list, nb_lightsources, v_pos_behind, q_rot, cam);
-                if(error == WF3D_SUCCESS)
-                {
-                    error = wf3d_triangle3d_Rasterization(face_piece + 1, img_out, lightsource_list, nb_lightsources, v_pos_behind, q_rot, cam);
-                }
+                face_piece.vertex_list[2] = owl_v3f32_add_scalar_mul(
+                                                                        owl_v3f32_add(
+                                                                                        owl_v3f32_scalar_mul(comple_base[0], sign_corner),
+                                                                                        owl_v3f32_scalar_mul(comple_base[1], -sign_corner)
+                                                                                      ),
+                                                                        adapted_base_xyz[bk],
+                                                                        sign_face
+                                                                     );
+                error = wf3d_triangle3d_Rasterization(&face_piece, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
             }
         }
     }
@@ -161,44 +224,41 @@ wf3d_error wf3d_ColoredCube_Rasterization2(wf3d_ColoredCube const* cube, wf3d_im
 
     for(int bk = 0 ; bk < 3 && error == WF3D_SUCCESS ; bk++)
     {
-        wf3d_triangle3d face_piece[2];
-
         owl_v3f32 const comple_base[2] =
         {
             adapted_base_xyz[(bk + 1) % 3],
             adapted_base_xyz[(bk + 2) % 3]
         };
-        owl_v3f32 vertex_list[4] =
-        {
-            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_add( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_sub( comple_base[0], comple_base[1] ) ),
-            owl_v3f32_sub( adapted_base_xyz[bk], owl_v3f32_add( comple_base[0], comple_base[1] ) )
-        };
 
-        wf3d_triangle3d_Set(face_piece + 0, vertex_list + 0, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
-        wf3d_triangle3d_Set(face_piece + 1, vertex_list + 1, base_xyz[bk], wf3d_triangle3d_MonoColorSurfaceCallback, cube->surface_list[bk]);
-        error = wf3d_triangle3d_Rasterization2(face_piece + 0, img_out, v_pos, q_rot, cam);
-        if(error == WF3D_SUCCESS)
+        for(float sign_face = -1.0 ; sign_face <= 1.0 && error == WF3D_SUCCESS ; sign_face += 2.0)
         {
-            error = wf3d_triangle3d_Rasterization2(face_piece + 1, img_out, v_pos, q_rot, cam);
+            wf3d_triangle3d face_piece;
 
-            if(error == WF3D_SUCCESS)
+            face_piece.surface_of = &wf3d_triangle3d_MonoColorSurfaceCallback;
+            face_piece.design_data = cube->surface_list[3*((int)(1.0 - sign_face) / 2) + bk];
+
+            face_piece.normal = owl_v3f32_scalar_mul(base_xyz[bk], sign_face);
+            face_piece.vertex_list[0] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_add(comple_base[0], comple_base[1]),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            face_piece.vertex_list[1] = owl_v3f32_add_scalar_mul(
+                                                                    owl_v3f32_scalar_mul(owl_v3f32_add(comple_base[0], comple_base[1]), -1.0),
+                                                                    adapted_base_xyz[bk],
+                                                                    sign_face
+                                                                 );
+            for(float sign_corner = -1.0 ; sign_corner <= 1.0 && error == WF3D_SUCCESS ; sign_corner += 2.0)
             {
-                face_piece[0].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[0].design_data = cube->surface_list[3 + bk];
-                face_piece[1].normal = owl_v3f32_scalar_mul(base_xyz[bk], -1.0f);
-                face_piece[1].design_data = cube->surface_list[3 + bk];
-                owl_v3f32 v_pos_behind = owl_v3f32_add_scalar_mul(
-                                                                        v_pos,
-                                                                        owl_q32_transform_v3f32(q_rot, adapted_base_xyz[bk]),
-                                                                        -2.0
-                                                                      );
-                error = wf3d_triangle3d_Rasterization2(face_piece + 0, img_out, v_pos_behind, q_rot, cam);
-                if(error == WF3D_SUCCESS)
-                {
-                    error = wf3d_triangle3d_Rasterization2(face_piece + 1, img_out, v_pos_behind, q_rot, cam);
-                }
+                face_piece.vertex_list[2] = owl_v3f32_add_scalar_mul(
+                                                                        owl_v3f32_add(
+                                                                                        owl_v3f32_scalar_mul(comple_base[0], sign_corner),
+                                                                                        owl_v3f32_scalar_mul(comple_base[1], -sign_corner)
+                                                                                      ),
+                                                                        adapted_base_xyz[bk],
+                                                                        sign_face
+                                                                     );
+                error = wf3d_triangle3d_Rasterization2(&face_piece, img_out, v_pos, q_rot, cam);
             }
         }
     }

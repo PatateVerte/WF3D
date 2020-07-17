@@ -87,6 +87,70 @@ wf3d_triangle3d* wf3d_triangle3d_CopyAndTransform(wf3d_triangle3d* t_dst, wf3d_t
     return wf3d_triangle3d_CopyDesign(t_dst, t_src);
 }
 
+//The intersection between a ray and the triangle3d
+//Return true if the intersection exists and returns the parameter, false otherwise
+//Optional parameters (modified only if an intersection has been found) :
+//t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
+//normal_ret to return the normal of the intersection
+//surface_ret to return the surface of the intersection
+bool wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret)
+{
+    bool intersection_found = false;
+
+    owl_q32 q_rot_conj = owl_q32_conj(q_rot);
+    owl_v3f32 rel_ray_origin = owl_q32_transform_v3f32(q_rot_conj, owl_v3f32_sub(ray_origin, v_pos));
+    owl_v3f32 rel_ray_dir = owl_q32_transform_v3f32(q_rot_conj, ray_dir);
+    float t = owl_v3f32_dot(owl_v3f32_sub(triangle->vertex_list[0], rel_ray_origin), triangle->normal) / owl_v3f32_dot(rel_ray_dir, triangle->normal);
+    if(t_min <= t && t <= t_max && isfinite(t) != 0)
+    {
+        owl_v3f32 rel_v_intersection = owl_v3f32_add_scalar_mul(rel_ray_origin, rel_ray_dir, t);
+
+        float det[3] = {0.0, 0.0, 0.0};
+        float det_sum = 0.0;
+        bool same_sign = true;
+        for(unsigned int k = 0 ; k < 3 && same_sign; k++)
+        {
+            unsigned int k1 = (k + 1) % 3;
+            unsigned int k2 = (k + 2) % 3;
+            det[k] = owl_v3f32_triple(
+                                        owl_v3f32_sub(rel_v_intersection, triangle->vertex_list[k1]),
+                                        owl_v3f32_sub(triangle->vertex_list[k2], triangle->vertex_list[k1]),
+                                        triangle->normal
+                                     );
+            det_sum += det[k];
+            same_sign = (det[k] * det[k2] >= 0.0);
+        }
+
+        if(same_sign)
+        {
+            float barycentric_coords[3];
+            for(unsigned int k = 0 ; k < 3 ; k++)
+            {
+                barycentric_coords[k] = det[k] / det_sum;
+            }
+
+            intersection_found = true;
+
+            if(t_ret != NULL)
+            {
+                *t_ret = t;
+            }
+
+            if(normal_ret != NULL)
+            {
+                *normal_ret = owl_q32_transform_v3f32(q_rot, triangle->normal);
+            }
+
+            if(surface_ret != NULL)
+            {
+                triangle->surface_of(triangle->design_data, surface_ret, barycentric_coords);
+            }
+        }
+    }
+
+    return intersection_found;
+}
+
 //triangle_ret_list[2]
 //
 //

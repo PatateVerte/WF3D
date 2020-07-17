@@ -148,6 +148,30 @@ float wf3d_PolygonMesh_InfRadiusWithRot(wf3d_PolygonMesh const* obj, owl_v3f32 v
 //
 //
 //
+bool wf3d_PolygonMesh_NearestIntersectionWithRay(wf3d_PolygonMesh const* obj, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret)
+{
+    bool intersection_found = false;
+    float t = t_max;
+
+    for(unsigned int k = 0 ; k < obj->nb_faces ; k++)
+    {
+        intersection_found = wf3d_triangle3d_NearestIntersectionWithRay(obj->local_face_list + k, v_pos, q_rot, ray_origin, ray_dir, t_min, t, &t, normal_ret, surface_ret) || intersection_found;
+    }
+
+    if(intersection_found)
+    {
+        if(t_ret != NULL)
+        {
+            *t_ret = t;
+        }
+    }
+
+    return intersection_found;
+}
+
+//
+//
+//
 wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     if(obj == NULL)

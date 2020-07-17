@@ -120,6 +120,28 @@ float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_
     return inf_radius;
 }
 
+//
+//
+//
+bool wf3d_Cylinder_NearestIntersectionWithRay(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret)
+{
+    bool intersection_found = false;
+    float t = t_max;
+
+    intersection_found = wf3d_quadratic_curve_NearestIntersectionWithRay(&cylinder->side, v_pos, q_rot, ray_origin, ray_dir, t_min, t, &t, normal_ret, surface_ret) || intersection_found;
+    intersection_found = wf3d_quadratic_curve_NearestIntersectionWithRay(&cylinder->extrem, v_pos, q_rot, ray_origin, ray_dir, t_min, t, &t, normal_ret, surface_ret) || intersection_found;
+
+    if(intersection_found)
+    {
+        if(t_ret != NULL)
+        {
+            *t_ret = t;
+        }
+    }
+
+    return intersection_found;
+}
+
 //Rasterization function
 //
 //

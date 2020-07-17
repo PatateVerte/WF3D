@@ -35,8 +35,11 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set_design(wf3d_quadratic_curve* curv
 
 //The intersection between a ray and the quadratic curve
 //Return true if the intersection exists and returns the parameter, false otherwise
-//t contains the parameter for the nearest intersection
-bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_v3f32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t)
+//Optional parameters (modified only if an intersection has been found) :
+//t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
+//normal_ret to return the normal of the intersection
+//surface_ret to return the surface of the intersection
+bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret)
 {
     bool intersection_exists = false;
     float t_found = INFINITY;
@@ -109,11 +112,34 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
             owl_v3f32 v_2 = owl_v3f32_comp_mul(rel_P1, curve->norm2_filter);
 
             t_found = t1;
-            intersection_exists = owl_v3f32_norminf(v_inf) <= 1.0 && owl_v3f32_dot(v_2, v_2) <= 1.0;
+            intersection_exists = (owl_v3f32_norminf(v_inf) <= 1.0 && owl_v3f32_dot(v_2, v_2) <= 1.0);
         }
     }
 
-    *t = t_found;
+    if(intersection_exists)
+    {
+        if(t_ret != NULL)
+        {
+            *t_ret = t_found;
+        }
+
+        if(normal_ret != NULL)
+        {
+            owl_v3f32 v_intersection_eigenbasis = owl_v3f32_add_scalar_mul(rel_ray_origin, rel_ray_dir, t_found);
+            owl_v3f32 normal_eigenbasis = owl_v3f32_add_scalar_mul(
+                                                                    curve->a,
+                                                                    owl_v3f32_comp_mul(curve->alpha, v_intersection_eigenbasis),
+                                                                    2.0
+                                                                   );
+            *normal_ret = owl_v3f32_normalize(owl_q32_transform_v3f32(q_rot_eigenbasis, normal_eigenbasis));
+        }
+
+        if(surface_ret != NULL)
+        {
+            *surface_ret = *curve->surface_data;
+        }
+    }
+
     return intersection_exists;
 }
 
@@ -216,31 +242,19 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
             float x_f = ((float)x - half_width + 0.5) * (cam->tan_h_half_opening_angle / half_width);
 
             owl_v3f32 v_dir = owl_v3f32_set(x_f, y_f, -1.0);
-            float t_min = (1.0 + x_f*x_f + y_f*y_f) * cam->near_clipping_distance;
-            float t_max = (1.0 + x_f*x_f + y_f*y_f) * cam->far_clipping_distance;
+            float t_min = cam->near_clipping_distance;
+            float t_max = fminf(cam->far_clipping_distance, wf3d_Image2d_unsafe_Depth(img_out->img2d, x, y));
             float t = 0.0;
-            if(wf3d_quadratic_curve_NearestIntersectionWithRay(curve, v_pos, q_rot, owl_v3f32_zero(), v_dir, t_min, t_max, &t))
+            owl_v3f32 normal;
+            if(wf3d_quadratic_curve_NearestIntersectionWithRay(curve, v_pos, q_rot, owl_v3f32_zero(), v_dir, t_min, t_max, &t, &normal, NULL))
             {
                 owl_v3f32 v_intersection = owl_v3f32_scalar_mul(v_dir, t);
                 float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
-                if(depth <= cam->far_clipping_distance && depth <= wf3d_Image2d_unsafe_Depth(img_out->img2d, x, y))
-                {
-                    owl_v3f32 v_intersection_eigenbasis = owl_q32_transform_v3f32(
-                                                                                    owl_q32_conj(q_rot_eigenbasis),
-                                                                                    owl_v3f32_sub(v_intersection, v_pos)
-                                                                                  );
-                    owl_v3f32 normal_eigenbasis = owl_v3f32_add_scalar_mul(
-                                                                            curve->a,
-                                                                            owl_v3f32_comp_mul(curve->alpha, v_intersection_eigenbasis),
-                                                                            2.0
-                                                                           );
-                    owl_v3f32 normal = owl_v3f32_normalize(owl_q32_transform_v3f32(q_rot_eigenbasis, normal_eigenbasis));
 
-                    wf3d_color final_color;
-                    wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, curve->surface_data, v_intersection, normal);
+                wf3d_color final_color;
+                wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, curve->surface_data, v_intersection, normal);
 
-                    error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
-                }
+                error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
             }
         }
     }
@@ -347,28 +361,16 @@ wf3d_error wf3d_quadratic_curve_Rasterization2(wf3d_quadratic_curve const* curve
             float x_f = ((float)x - half_width + 0.5) * (cam->tan_h_half_opening_angle / half_width);
 
             owl_v3f32 v_dir = owl_v3f32_set(x_f, y_f, -1.0);
-            float t_min = (1.0 + x_f*x_f + y_f*y_f) * cam->near_clipping_distance;
-            float t_max = (1.0 + x_f*x_f + y_f*y_f) * cam->far_clipping_distance;
+            float t_min = cam->near_clipping_distance;
+            float t_max = fminf(cam->far_clipping_distance, wf3d_Image3d_unsafe_Depth(img_out->img3d, x - img_out->x_min, y - img_out->y_min));
             float t = 0.0;
-            if(wf3d_quadratic_curve_NearestIntersectionWithRay(curve, v_pos, q_rot, owl_v3f32_zero(), v_dir, t_min, t_max, &t))
+            owl_v3f32 normal;
+            if(wf3d_quadratic_curve_NearestIntersectionWithRay(curve, v_pos, q_rot, owl_v3f32_zero(), v_dir, t_min, t_max, &t, &normal, NULL))
             {
                 owl_v3f32 v_intersection = owl_v3f32_scalar_mul(v_dir, t);
                 float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
-                if(depth <= cam->far_clipping_distance && depth <= wf3d_Image3d_unsafe_Depth(img_out->img3d, x - img_out->x_min, y - img_out->y_min))
-                {
-                    owl_v3f32 v_intersection_eigenbasis = owl_q32_transform_v3f32(
-                                                                                    owl_q32_conj(q_rot_eigenbasis),
-                                                                                    owl_v3f32_sub(v_intersection, v_pos)
-                                                                                  );
-                    owl_v3f32 normal_eigenbasis = owl_v3f32_add_scalar_mul(
-                                                                            curve->a,
-                                                                            owl_v3f32_comp_mul(curve->alpha, v_intersection_eigenbasis),
-                                                                            2.0
-                                                                           );
-                    owl_v3f32 normal = owl_v3f32_normalize(owl_q32_transform_v3f32(q_rot_eigenbasis, normal_eigenbasis));
 
-                    error = wf3d_Image3d_SetPixel(img_out->img3d, x - img_out->x_min, y - img_out->y_min, curve->surface_data, depth, v_intersection, normal);
-                }
+                error = wf3d_Image3d_SetPixel(img_out->img3d, x - img_out->x_min, y - img_out->y_min, curve->surface_data, depth, v_intersection, normal);
             }
         }
     }
