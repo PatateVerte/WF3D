@@ -155,7 +155,7 @@ bool wf3d_ColoredCube_NearestIntersectionWithRay(wf3d_ColoredCube const* cube, o
 //Rasterization function
 //
 //
-wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     wf3d_error error = WF3D_SUCCESS;
 
@@ -201,7 +201,7 @@ wf3d_error wf3d_ColoredCube_Rasterization(wf3d_ColoredCube const* cube, wf3d_ima
                                                                         adapted_base_xyz[bk],
                                                                         sign_face
                                                                      );
-                error = wf3d_triangle3d_Rasterization(&face_piece, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+                error = wf3d_triangle3d_Rasterization(&face_piece, img_out, env, v_pos, q_rot);
             }
         }
     }

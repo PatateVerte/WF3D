@@ -172,7 +172,7 @@ bool wf3d_PolygonMesh_NearestIntersectionWithRay(wf3d_PolygonMesh const* obj, ow
 //
 //
 //
-wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     if(obj == NULL)
     {
@@ -183,7 +183,7 @@ wf3d_error wf3d_PolygonMesh_Rasterization(wf3d_PolygonMesh const* obj, wf3d_imag
 
     for(unsigned int fi = 0 ; fi < obj->nb_faces && error == WF3D_SUCCESS ; fi++)
     {
-        error = wf3d_triangle3d_Rasterization(obj->local_face_list + fi, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+        error = wf3d_triangle3d_Rasterization(obj->local_face_list + fi, img_out, env, v_pos, q_rot);
     }
 
     return error;

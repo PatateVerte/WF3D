@@ -53,7 +53,7 @@ float wf3d_Cylinder_InfRadiusWithRot(wf3d_Cylinder const* cylinder, owl_v3f32 v_
 bool wf3d_Cylinder_NearestIntersectionWithRay(wf3d_Cylinder const* cylinder, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret, wf3d_surface* surface_ret);
 
 //Rasterization function
-wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot);
 
 //Rasterization2 function
 wf3d_error wf3d_Cylinder_Rasterization2(wf3d_Cylinder const* cylinder, wf3d_image3d_image_piece* img_out, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);

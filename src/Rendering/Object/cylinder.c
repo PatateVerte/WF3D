@@ -145,14 +145,14 @@ bool wf3d_Cylinder_NearestIntersectionWithRay(wf3d_Cylinder const* cylinder, owl
 //Rasterization function
 //
 //
-wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_Cylinder_Rasterization(wf3d_Cylinder const* cylinder, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     wf3d_error error = WF3D_SUCCESS;
 
-    error = wf3d_quadratic_curve_Rasterization(&cylinder->side, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+    error = wf3d_quadratic_curve_Rasterization(&cylinder->side, img_out, env, v_pos, q_rot);
     if(error == WF3D_SUCCESS)
     {
-        error = wf3d_quadratic_curve_Rasterization(&cylinder->extrem, img_out, lightsource_list, nb_lightsources, v_pos, q_rot, cam);
+        error = wf3d_quadratic_curve_Rasterization(&cylinder->extrem, img_out, env, v_pos, q_rot);
     }
 
     return error;

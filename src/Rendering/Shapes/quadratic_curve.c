@@ -146,9 +146,11 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
 //Raserization of a quadratic curve
 //
 //
-wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     wf3d_error error = WF3D_SUCCESS;
+
+    wf3d_camera3d const* cam = env->cam;
 
     float half_height = 0.5 * (float)img_out->img2d->height;
     float half_width = 0.5 * (float)img_out->img2d->width;
@@ -252,7 +254,7 @@ wf3d_error wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve,
                 float depth = - owl_v3f32_unsafe_get_component(v_intersection, 2);
 
                 wf3d_color final_color;
-                wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, curve->surface_data, v_intersection, normal);
+                wf3d_lightsource_enlight_surface(env->lightsource_list, env->nb_lightsources, &final_color, curve->surface_data, v_intersection, normal);
 
                 error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
             }

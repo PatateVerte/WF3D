@@ -29,14 +29,14 @@ wf3d_lightsource* wf3d_lightsource_transform(wf3d_lightsource* lightsource_dst, 
     return lightsource_dst;
 }
 
-wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, wf3d_color* color_ret, wf3d_surface const* surface, owl_v3f32 v_pos, owl_v3f32 normal)
+wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* lightsource_list, unsigned int nb_lightsources, wf3d_color* color_ret, wf3d_surface const* surface, owl_v3f32 v_pos, owl_v3f32 normal)
 {
     __m128 final_color_rgba = _mm_setzero_ps();
     __m128 surface_diffusion_color_rgba = _mm_loadu_ps(surface->diffusion_color.rgba);
 
     for(unsigned int k = 0 ; k < nb_lightsources ; k++)
     {
-        wf3d_lightsource const* lightsource = lightsource_list + k;
+        wf3d_lightsource const* lightsource = lightsource_list[k];
         float intensity = 0.0;
 
         switch(lightsource->type)

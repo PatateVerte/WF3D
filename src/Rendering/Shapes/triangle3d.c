@@ -313,9 +313,11 @@ unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_tr
 //
 //
 //
-wf3d_error wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, wf3d_camera3d const* cam)
+wf3d_error wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env)
 {
     wf3d_error error = WF3D_SUCCESS;
+
+    wf3d_camera3d const* cam = env->cam;
 
     float half_width = 0.5 * (float)img_out->img2d->width;
     float half_height = 0.5 * (float)img_out->img2d->height;
@@ -476,7 +478,7 @@ wf3d_error wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* tri
                             triangle->surface_of(triangle->design_data, &surface, barycentric_coords);
 
                             wf3d_color final_color;
-                            wf3d_lightsource_enlight_surface(lightsource_list, nb_lightsources, &final_color, &surface, v_intersection, rel_normal);
+                            wf3d_lightsource_enlight_surface(env->lightsource_list, env->nb_lightsources, &final_color, &surface, v_intersection, rel_normal);
 
                             error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
                         }
@@ -492,18 +494,18 @@ wf3d_error wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* tri
 //Rasterization of a triangle
 //
 //
-wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_lightsource const* lightsource_list, unsigned int nb_lightsources, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+wf3d_error wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_image2d_rectangle* img_out, wf3d_rasterization_env const* env, owl_v3f32 v_pos, owl_q32 q_rot)
 {
     wf3d_error error = WF3D_SUCCESS;
 
     wf3d_triangle3d clipped_triangle[2];
     wf3d_triangle3d_clipped_design clipped_design[2];
 
-    unsigned int nb_clipped_triangle = wf3d_triangle3d_Clipping(clipped_triangle, clipped_design, triangle, v_pos, q_rot, cam);
+    unsigned int nb_clipped_triangle = wf3d_triangle3d_Clipping(clipped_triangle, clipped_design, triangle, v_pos, q_rot, env->cam);
 
     for(unsigned int k = 0 ; k < nb_clipped_triangle && error == WF3D_SUCCESS ; k++)
     {
-        wf3d_triangle3d_RasterizationAfterClipping(clipped_triangle + k, img_out, lightsource_list, nb_lightsources, cam);
+        wf3d_triangle3d_RasterizationAfterClipping(clipped_triangle + k, img_out, env);
     }
 
     return error;
