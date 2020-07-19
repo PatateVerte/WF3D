@@ -19,10 +19,10 @@ wf3d_lightsource* wf3d_lightsource_transform(wf3d_lightsource* lightsource_dst, 
         break;
     case WF3D_LIGHTSOURCE_PUNCTUAL:
         lightsource_dst->punctual_src.intensity_per_surface = lightsource_src->punctual_src.intensity_per_surface;
-        lightsource_dst->punctual_src.v_pos = owl_q32_transform_v3f32(
-                                                                        q_rot,
-                                                                        owl_v3f32_add(v, lightsource_src->punctual_src.v_pos)
-                                                                      );
+        lightsource_dst->punctual_src.v_pos = owl_v3f32_add(
+                                                                v,
+                                                                owl_q32_transform_v3f32(q_rot, lightsource_src->punctual_src.v_pos)
+                                                            );
         break;
     }
 
