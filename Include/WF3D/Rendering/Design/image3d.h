@@ -4,7 +4,7 @@
 #include <WF3D/error.h>
 #include <WF3D/Rendering/Design/surface.h>
 
-#include <OWL/v3f32.h>
+#include <OWL/Optimized3d/vector/v3f32.h>
 
 #include <stdio.h>
 #include <stdbool.h>

@@ -1,8 +1,8 @@
 #ifndef WF3D_LIGHTSOURCE_H_INCLUDED
 #define WF3D_LIGHTSOURCE_H_INCLUDED
 
-#include <OWL/v3f32.h>
-#include <OWL/q32.h>
+#include <OWL/Optimized3d/vector/v3f32.h>
+#include <OWL/Optimized3d/quaternion/q32.h>
 
 #include <WF3D/Rendering/Design/color.h>
 #include <WF3D/Rendering/Design/surface.h>

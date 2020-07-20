@@ -5,8 +5,8 @@
 
 #include <WF3D/error.h>
 
-#include <OWL/v3f32.h>
-#include <OWL/q32.h>
+#include <OWL/Optimized3d/vector/v3f32.h>
+#include <OWL/Optimized3d/quaternion/q32.h>
 
 #include <WF3D/Rendering/camera3d.h>
 #include <WF3D/Rendering/Shapes/rasterization_attr.h>
