@@ -477,10 +477,13 @@ wf3d_error wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* tri
                             wf3d_surface surface;
                             triangle->surface_of(triangle->design_data, &surface, barycentric_coords);
 
-                            wf3d_color final_color;
-                            wf3d_lightsource_enlight_surface(env->lightsource_list, env->nb_lightsources, &final_color, &surface, v_intersection, rel_normal);
+                            if(!surface.transparent)
+                            {
+                                wf3d_color final_color;
+                                wf3d_lightsource_enlight_surface(env->lightsource_list, env->nb_lightsources, &final_color, &surface, v_intersection, rel_normal, owl_v3f32_normalize(v_intersection));
 
-                            error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
+                                error = wf3d_Image2d_SetPixel(img_out->img2d, x, y, &final_color, depth);
+                            }
                         }
                     }
                 }
