@@ -36,6 +36,4 @@ typedef struct
 
 } wf3d_surface;
 
-wf3d_surface* wf3d_surface_mix(wf3d_surface* mixed_surface, wf3d_surface const* const* surface_list, float const* coeff, int nb_colors);
-
 #endif // WF3D_SURFACE_H_INCLUDED

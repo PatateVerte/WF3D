@@ -6,7 +6,6 @@
 typedef struct
 {
     float near_clipping_distance;
-    float far_clipping_distance;
 
     bool blackface_culling_enabled;
     int max_nb_reflections;
@@ -17,6 +16,6 @@ typedef struct
 } wf3d_camera3d;
 
 //
-wf3d_camera3d* wf3d_camera3d_Set(wf3d_camera3d* cam, float near_clipping_distance, float far_clipping_distance, float h_opening_angle, float v_opening_angle, bool blackface_culling_enabled, int max_nb_reflections);
+wf3d_camera3d* wf3d_camera3d_Set(wf3d_camera3d* cam, float far_clipping_distance, float h_opening_angle, float v_opening_angle, bool blackface_culling_enabled, int max_nb_reflections);
 
 #endif // WF3D_CAMERA3D_H_INCLUDED

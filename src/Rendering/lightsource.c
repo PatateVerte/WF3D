@@ -33,7 +33,7 @@ wf3d_lightsource* wf3d_lightsource_transform(wf3d_lightsource* lightsource_dst, 
 //||normal|| = ||vision_ray_dir|| = 1
 wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* lightsource_list, unsigned int nb_lightsources, wf3d_color* color_ret, wf3d_surface const* surface, owl_v3f32 v_pos, owl_v3f32 normal, owl_v3f32 vision_ray_dir)
 {
-    __m128 final_color_rgba = _mm_setzero_ps();
+    __m128 final_color_rgb = _mm_setzero_ps();
 
     switch(surface->shading_model)
     {
@@ -79,17 +79,17 @@ wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* ligh
                     break;
                 }
 
-                final_color_rgba = _mm_add_ps(
-                                                final_color_rgba,
+                final_color_rgb = _mm_add_ps(
+                                                final_color_rgb,
                                                 _mm_mul_ps(
-                                                            _mm_mul_ps(_mm_set1_ps(diffusion_intensity), _mm_loadu_ps(lightsource->color.rgba)),
-                                                            _mm_loadu_ps(surface->diffusion_color.rgba)
+                                                            _mm_mul_ps(_mm_set1_ps(diffusion_intensity), _mm_loadu_ps(lightsource->color.rgb)),
+                                                            _mm_loadu_ps(surface->diffusion_color.rgb)
                                                            )
                                               );
-                final_color_rgba = _mm_add_ps(
-                                                final_color_rgba,
+                final_color_rgb = _mm_add_ps(
+                                                final_color_rgb,
                                                 _mm_mul_ps(
-                                                            _mm_mul_ps(_mm_set1_ps(specular_intensity), _mm_loadu_ps(lightsource->color.rgba)),
+                                                            _mm_mul_ps(_mm_set1_ps(specular_intensity), _mm_loadu_ps(lightsource->color.rgb)),
                                                            _mm_loadu_ps(surface->specular_filter)
                                                            )
                                               );
@@ -129,11 +129,11 @@ wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* ligh
                     break;
                 }
 
-                final_color_rgba = _mm_add_ps(
-                                                final_color_rgba,
+                final_color_rgb = _mm_add_ps(
+                                                final_color_rgb,
                                                 _mm_mul_ps(
-                                                            _mm_mul_ps(_mm_set1_ps(diffusion_intensity), _mm_loadu_ps(lightsource->color.rgba)),
-                                                            _mm_loadu_ps(surface->diffusion_color.rgba)
+                                                            _mm_mul_ps(_mm_set1_ps(diffusion_intensity), _mm_loadu_ps(lightsource->color.rgb)),
+                                                            _mm_loadu_ps(surface->diffusion_color.rgb)
                                                            )
                                               );
             }
@@ -141,8 +141,8 @@ wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* ligh
         break;
     }
 
-    final_color_rgba = _mm_insert_ps(final_color_rgba, _mm_loadu_ps(surface->diffusion_color.rgba), 0b11110000);
-    _mm_storeu_ps(color_ret->rgba, final_color_rgba);
+    final_color_rgb = _mm_insert_ps(final_color_rgb, _mm_loadu_ps(surface->diffusion_color.rgb), 0b11110000);
+    _mm_storeu_ps(color_ret->rgb, final_color_rgb);
 
     return color_ret;
 }

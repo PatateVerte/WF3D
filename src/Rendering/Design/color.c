@@ -14,12 +14,12 @@ wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* const* col
     {
         acc_f = _mm_add_ps(
                             acc_f,
-                            _mm_mul_ps( _mm_loadu_ps(color_list[k]->rgba), _mm_set1_ps(coeff[k]) )
+                            _mm_mul_ps( _mm_loadu_ps(color_list[k]->rgb), _mm_set1_ps(coeff[k]) )
                            );
 
     }
 
-    _mm_storeu_ps(mixed_color->rgba, acc_f);
+    _mm_storeu_ps(mixed_color->rgb, acc_f);
 
     return mixed_color;
 }
@@ -30,7 +30,7 @@ wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* con
 
     for(unsigned int k = 0 ; k < nb_colors ; k++)
     {
-        int32_t color_i = (color_list[k]->rgba[3] << 24) | (color_list[k]->rgba[2] << 16) | (color_list[k]->rgba[1] << 8) | (color_list[k]->rgba[0] << 0);
+        int32_t color_i = (color_list[k]->rgb[3] << 24) | (color_list[k]->rgb[2] << 16) | (color_list[k]->rgb[1] << 8) | (color_list[k]->rgb[0] << 0);
         __m128i color_vect = _mm_cvtsi32_si128(color_i);
         color_vect = _mm_cvtepu8_epi32(color_vect);
         __m128 color_vect_f = _mm_mul_ps(_mm_cvtepi32_ps(color_vect), _mm_set1_ps(1.0 / 255.0));
@@ -42,26 +42,7 @@ wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* con
 
     }
 
-    _mm_storeu_ps(mixed_color->rgba, acc_f);
+    _mm_storeu_ps(mixed_color->rgb, acc_f);
 
     return mixed_color;
-}
-
-//filter = float[4]
-//
-//
-wf3d_color* wf3d_color_filter(wf3d_color* dst, wf3d_color const* src, float* filter)
-{
-    __m128 src_vect = _mm_loadu_ps(src->rgba);
-    __m128 color_vect = _mm_mul_ps(
-                                    src_vect,
-                                    _mm_loadu_ps(filter)
-                                   );
-    color_vect = _mm_insert_ps(color_vect, src_vect, 0b11110000);
-    _mm_storeu_ps(
-                    dst->rgba,
-                    color_vect
-                  );
-
-    return dst;
 }

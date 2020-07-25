@@ -1,6 +1,6 @@
 #include <WF3D/Rendering/Design/surface.h>
 
-wf3d_surface* wf3d_surface_mix(wf3d_surface* mixed_surface, wf3d_surface const* const* surface_list, float const* coeff, int nb_colors)
+/*wf3d_surface* wf3d_surface_mix(wf3d_surface* mixed_surface, wf3d_surface const* const* surface_list, float const* coeff, int nb_colors)
 {
     __m128 acc_color = _mm_setzero_ps();
     __m128 acc_reflection = _mm_setzero_ps();
@@ -31,5 +31,5 @@ wf3d_surface* wf3d_surface_mix(wf3d_surface* mixed_surface, wf3d_surface const* 
     mixed_surface->rel_refractive_index = rel_refractive_index;
 
     return mixed_surface;
-}
+}*/
 
