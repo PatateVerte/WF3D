@@ -27,7 +27,7 @@ static inline wf3d_color* wf3d_color_add(wf3d_color* final_color, wf3d_color con
 }
 
 //Mix several colors
-wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* const* color_list, float const* coeff, unsigned int nb_colors);
+wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* color_list, float const* coeff, unsigned int nb_colors);
 
 //filter = float[4]
 static inline wf3d_color* wf3d_color_filter(wf3d_color* final_color, wf3d_color const* color, float const* filter)
@@ -77,7 +77,8 @@ static inline wf3d_color* wf3d_color_from_color_uint8(wf3d_color* color, wf3d_co
 
     return color;
 }
-wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* const* color_list, float const* coeff, unsigned int nb_colors);
+
+wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* color_list, float const* coeff, unsigned int nb_colors);
 
 static inline float wf3d_color_uint8_luminance(wf3d_color_uint8 const* color8)
 {

@@ -59,6 +59,6 @@ wf3d_lightsource* wf3d_lightsource_transform(wf3d_lightsource* lightsource_dst, 
 
 //Enlights a surface with a list of lightsources
 //||normal|| = ||vision_ray_dir|| = 1
-wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* lightsource_list, unsigned int nb_lightsources, wf3d_color* color_ret, wf3d_surface const* surface, owl_v3f32 v_pos, owl_v3f32 normal, owl_v3f32 vision_ray_dir);
+wf3d_color* wf3d_lightsource_enlight_surface(wf3d_lightsource const* const* lightsource_list, unsigned int nb_lightsources, wf3d_color* color_ret, wf3d_surface const* surface, wf3d_color const* diffusion_color, owl_v3f32 v_pos, owl_v3f32 normal, owl_v3f32 vision_ray_dir);
 
 #endif // WF3D_LIGHTSOURCE_H_INCLUDED

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include <OWL/owl.h>
-#include <WF3D/Rendering/Design/color.h>
 
 typedef enum
 {
@@ -15,7 +14,6 @@ typedef enum
 
 typedef struct
 {
-    wf3d_color diffusion_color;
     float reflection_filter[4] OWL_ALIGN16;
     float refraction_filter[4] OWL_ALIGN16;
 
