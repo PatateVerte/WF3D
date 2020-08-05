@@ -5,6 +5,8 @@
 
 #include <OWL/owl.h>
 
+#include <WF3D/Rendering/Design/color.h>
+
 typedef enum
 {
     WF3D_DEFAULT_SHADING,
@@ -14,8 +16,8 @@ typedef enum
 
 typedef struct
 {
-    float reflection_filter[4] OWL_ALIGN16;
-    float refraction_filter[4] OWL_ALIGN16;
+    wf3d_color reflection_color;
+    wf3d_color refraction_color;
 
     //If set to true, the surface will be ignored during Rasterization
     //This field has no impact on ray tracing
@@ -30,7 +32,7 @@ typedef struct
 
     //Phong lightning data
     float shininess;
-    float specular_filter[4] OWL_ALIGN16;
+    wf3d_color specular_color;
 
 } wf3d_surface;
 

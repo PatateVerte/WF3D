@@ -2,44 +2,110 @@
 #define WF3D_COLOR_H_INCLUDED
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#include <OWL/owl.h>
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
+#include <immintrin.h>
 #include <smmintrin.h>
 
 #include <math.h>
 
+//
+//  COLOR F32
+//
 typedef struct
 {
-    float rgb[4];
+    float rgb[4] OWL_ALIGN16;
 
 } wf3d_color;
 
 //
-static inline wf3d_color* wf3d_color_add(wf3d_color* final_color, wf3d_color const* color1, wf3d_color const* color2)
+static inline wf3d_color wf3d_color_set(float r, float g, float b)
 {
+    return (wf3d_color){.rgb = {r, g, b, 0.0}};
+}
+
+//
+static inline wf3d_color wf3d_color_black()
+{
+    return (wf3d_color){.rgb = {0.0, 0.0, 0.0, 0.0}};
+}
+
+//
+bool wf3d_color_isblack(wf3d_color color);
+
+//
+static inline wf3d_color wf3d_color_scalar_mul(wf3d_color color, float f)
+{
+    wf3d_color res_color = wf3d_color_black();
     for(unsigned int k = 0 ; k < 4 ; k++)
     {
-        final_color->rgb[k] = color1->rgb[k] + color2->rgb[k];
+        res_color.rgb[k] = f * color.rgb[k];
     }
+    return res_color;
+}
 
-    return final_color;
+//
+static inline wf3d_color wf3d_color_add(wf3d_color color1, wf3d_color color2)
+{
+    wf3d_color res_color = wf3d_color_black();
+    for(unsigned int k = 0 ; k < 4 ; k++)
+    {
+        res_color.rgb[k] = color1.rgb[k] + color2.rgb[k];
+    }
+    return res_color;
+}
+
+//
+static inline wf3d_color wf3d_color_mul(wf3d_color color1, wf3d_color color2)
+{
+    wf3d_color res_color = wf3d_color_black();
+    for(unsigned int k = 0 ; k < 4 ; k++)
+    {
+        res_color.rgb[k] = color1.rgb[k] * color2.rgb[k];
+    }
+    return res_color;
+}
+
+//
+static inline wf3d_color wf3d_color_add_scalar_mul(wf3d_color color1, wf3d_color color2, float f)
+{
+    wf3d_color res_color = wf3d_color_black();
+    for(unsigned int k = 0 ; k < 4 ; k++)
+    {
+        res_color.rgb[k] = color1.rgb[k] + f * color2.rgb[k];
+    }
+    return res_color;
 }
 
 //Mix several colors
-wf3d_color* wf3d_color_mix(wf3d_color* mixed_color, wf3d_color const* color_list, float const* coeff, unsigned int nb_colors);
-
-//filter = float[4]
-static inline wf3d_color* wf3d_color_filter(wf3d_color* final_color, wf3d_color const* color, float const* filter)
+static inline wf3d_color wf3d_color_mix(wf3d_color const* color_list, float const* coeff, unsigned int nb_colors)
 {
-    for(unsigned int k = 0 ; k < 4 ; k++)
+    wf3d_color mixed_color = wf3d_color_black();
+    for(unsigned int k = 0 ; k < nb_colors ; k++)
     {
-        final_color->rgb[k] = color->rgb[k] * filter[k];
+        mixed_color = wf3d_color_add_scalar_mul(mixed_color, color_list[k], coeff[k]);
     }
-
-    return final_color;
+    return mixed_color;
 }
 
+//filter = float[4]
+static inline wf3d_color wf3d_color_filter(wf3d_color color, float const* filter)
+{
+    wf3d_color res_color = wf3d_color_black();
+    for(unsigned int k = 0 ; k < 4 ; k++)
+    {
+        res_color.rgb[k] = filter[k] * color.rgb[k];
+    }
+    return res_color;
+}
+
+//
+//  COLOR UINT8
+//
 typedef struct
 {
     uint8_t rgb[4];
@@ -72,17 +138,41 @@ static inline wf3d_color* wf3d_color_from_color_uint8(wf3d_color* color, wf3d_co
 
     _mm_storeu_ps(
                     color->rgb,
-                    _mm_mul_ps(_mm_cvtepi32_ps(color_vect), _mm_set1_ps(1.0 / 255.0))
+                    _mm_mul_ps(_mm_cvtepi32_ps(color_vect), _mm_set1_ps(1.0f / 255.0f))
                   );
 
     return color;
 }
 
-wf3d_color* wf3d_color_mix8(wf3d_color* mixed_color, wf3d_color_uint8 const* color_list, float const* coeff, unsigned int nb_colors);
-
 static inline float wf3d_color_uint8_luminance(wf3d_color_uint8 const* color8)
 {
-    return (0.3 * (float)color8->rgb[0] + 0.59 * (float)color8->rgb[1] + 0.11 * (float)color8->rgb[2]) / 255.0;
+    return (0.3f * (float)color8->rgb[0] + 0.59f * (float)color8->rgb[1] + 0.11f * (float)color8->rgb[2]) / 255.0f;
+}
+
+//
+//COLOR F16
+//
+typedef struct
+{
+    int64_t data;
+
+} wf3d_color_f16;
+
+static inline wf3d_color_f16 wf3d_color_f16_set(float r, float g, float b)
+{
+    return (wf3d_color_f16){ .data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_set_ps(0.0, b, g, r), 0)) };
+}
+
+static inline wf3d_color_f16 wf3d_color_f16_from_color(wf3d_color color)
+{
+    return (wf3d_color_f16){ .data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_loadu_ps(color.rgb), 0)) };
+}
+
+static inline wf3d_color wf3d_color_from_color_f16(wf3d_color_f16 color16)
+{
+    wf3d_color color;
+    _mm_storeu_ps(color.rgb, _mm_cvtph_ps(_mm_cvtsi64_si128(color16.data)));
+    return color;
 }
 
 #endif // WF3D_COLOR_H_INCLUDED

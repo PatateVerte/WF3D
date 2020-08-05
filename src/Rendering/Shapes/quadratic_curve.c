@@ -25,7 +25,7 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_
 //t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
 //normal_ret to return the normal of the intersection
 //surface_ret to return the surface of the intersection
-bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
+bool OWL_VECTORCALL wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
 {
     bool intersection_exists = false;
     float t_found = INFINITY;
@@ -59,16 +59,16 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
                                      );
     }
 
-    if(a != 0.0)
+    if(a != 0.0f)
     {
-        float Delta = b*b - 4*a*c;
-        if(Delta >= 0.0)
+        float Delta = b*b - 4.0f*a*c;
+        if(Delta >= 0.0f)
         {
             float sqrt_Delta = sqrtf(Delta);
             float t[2] =
             {
-                (-b + sqrt_Delta) / (2.0 * a),
-                (-b - sqrt_Delta) / (2.0 * a)
+                (-b + sqrt_Delta) / (2.0f * a),
+                (-b - sqrt_Delta) / (2.0f * a)
             };
 
             for(unsigned i = 0 ; i < 2 ; i++)
@@ -79,7 +79,7 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
                     owl_v3f32 v_inf = owl_v3f32_comp_mul(rel_Pi, curve->norminf_filter);
                     owl_v3f32 v_2 = owl_v3f32_comp_mul(rel_Pi, curve->norm2_filter);
 
-                    if(owl_v3f32_norminf(v_inf) <= 1.0 && owl_v3f32_dot(v_2, v_2) <= 1.0)
+                    if(owl_v3f32_norminf(v_inf) <= 1.0f && owl_v3f32_dot(v_2, v_2) <= 1.0f)
                     {
                         t_found = fminf(t_found, t[i]);
                         intersection_exists = true;
@@ -88,7 +88,7 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
             }
         }
     }
-    else if(b != 0.0)
+    else if(b != 0.0f)
     {
         float t1 = - c / b;
         if(t_min <= t1 && t1 <= t_max)
@@ -98,7 +98,7 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
             owl_v3f32 v_2 = owl_v3f32_comp_mul(rel_P1, curve->norm2_filter);
 
             t_found = t1;
-            intersection_exists = (owl_v3f32_norminf(v_inf) <= 1.0 && owl_v3f32_dot(v_2, v_2) <= 1.0);
+            intersection_exists = (owl_v3f32_norminf(v_inf) <= 1.0f && owl_v3f32_dot(v_2, v_2) <= 1.0f);
         }
     }
 
@@ -115,7 +115,7 @@ bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const*
             owl_v3f32 normal_eigenbasis = owl_v3f32_add_scalar_mul(
                                                                     curve->a,
                                                                     owl_v3f32_comp_mul(curve->alpha, v_intersection_eigenbasis),
-                                                                    2.0
+                                                                    2.0f
                                                                    );
             *normal_ret = owl_v3f32_normalize(owl_q32_transform_v3f32(q_rot_eigenbasis, normal_eigenbasis));
         }
@@ -142,7 +142,7 @@ typedef struct
 //
 //
 //
-static void wf3d_rasterization_triangle3d_callback(wf3d_rasterization_rectangle const* rect, int x, int y, void const* callback_arg, owl_v3f32 v_intersection, owl_v3f32 normal)
+static void OWL_VECTORCALL wf3d_rasterization_triangle3d_callback(wf3d_rasterization_rectangle const* rect, int x, int y, void const* callback_arg, owl_v3f32 v_intersection, owl_v3f32 normal)
 {
     (void)normal;
 
@@ -155,7 +155,7 @@ static void wf3d_rasterization_triangle3d_callback(wf3d_rasterization_rectangle 
     owl_v3f32 curve_normal;
     if(wf3d_quadratic_curve_NearestIntersectionWithRay(arg->curve, arg->v_pos, arg->q_rot, owl_v3f32_zero(), v_intersection, t_min, INFINITY, &t, &curve_normal))
     {
-        if(!cam->blackface_culling_enabled || owl_v3f32_dot(curve_normal, v_intersection) <= 0.0)
+        if(!cam->blackface_culling_enabled || owl_v3f32_dot(curve_normal, v_intersection) <= 0.0f)
         {
             curve_callback->callback_fct(rect, x, y, curve_callback->callback_arg, owl_v3f32_scalar_mul(v_intersection, t), curve_normal);
         }
@@ -165,10 +165,10 @@ static void wf3d_rasterization_triangle3d_callback(wf3d_rasterization_rectangle 
 //
 //
 //
-void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+void OWL_VECTORCALL wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
-    owl_v3f32 inv_vect_eigenbasis = owl_v3f32_comp_div(owl_v3f32_broadcast(1.0), curve->norminf_filter);
-    bool optimized_rasterization = (isfinite(owl_v3f32_norm(inv_vect_eigenbasis)) != 0);
+    owl_v3f32 inv_vect_eigenbasis = owl_v3f32_comp_div(owl_v3f32_broadcast(1.0f), curve->norminf_filter);
+    bool optimized_rasterization = (isfinite(owl_v3f32_norm(inv_vect_eigenbasis)) != 0.0f);
 
     if(optimized_rasterization)
     {
@@ -188,13 +188,13 @@ void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_
 
         //Usual sign convention
         int vertex_is_clipped = 0;
-        for(float sign_z = -1.0 ; sign_z <= 1.0 ; sign_z += 2.0)
+        for(float sign_z = -1.0f ; sign_z <= 1.0f ; sign_z += 2.0f)
         {
             owl_v3f32 vertex_z = owl_v3f32_add_scalar_mul(v_pos, adapted_base[2], sign_z);
-            for(float sign_y = -1.0 ; sign_y <= 1.0 ; sign_y += 2.0)
+            for(float sign_y = -1.0f ; sign_y <= 1.0f ; sign_y += 2.0f)
             {
                 owl_v3f32 vertex_yz = owl_v3f32_add_scalar_mul(vertex_z, adapted_base[1], sign_y);
-                for(float sign_x = -1.0 ; sign_x <= 1.0 ; sign_x += 2.0)
+                for(float sign_x = -1.0f ; sign_x <= 1.0f ; sign_x += 2.0f)
                 {
                     owl_v3f32 vertex_xyz = owl_v3f32_add_scalar_mul(vertex_yz, adapted_base[0], sign_x);
                     float z_vertex = owl_v3f32_unsafe_get_component(vertex_xyz, 2);
@@ -230,7 +230,7 @@ void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_
 
                 owl_v3f32 positive_face_normal = owl_v3f32_normalize(adapted_base[bk0]);
 
-                for(float face_sign = -1.0 ; face_sign <= 1.0 ; face_sign += 2.0)
+                for(float face_sign = -1.0f ; face_sign <= 1.0f ; face_sign += 2.0f)
                 {
                     owl_v3f32 face_center = owl_v3f32_add_scalar_mul(v_pos, adapted_base[bk0], face_sign);
 
@@ -245,7 +245,7 @@ void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_
                                                                 owl_v3f32_add(adapted_base[bk1], adapted_base[bk2])
                                                             );
 
-                    for(float corner_sign = -1.0 ; corner_sign <= 1.0 ; corner_sign += 2.0)
+                    for(float corner_sign = -1.0f ; corner_sign <= 1.0f ; corner_sign += 2.0f)
                     {
                         triangle.vertex_list[2] = owl_v3f32_add_scalar_mul(
                                                                             face_center,
@@ -260,18 +260,18 @@ void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_
     }
     else
     {
-        float half_height = 0.5 * (float)rect->height;
-        float half_width = 0.5 * (float)rect->width;
+        float half_height = 0.5f * (float)rect->height;
+        float half_width = 0.5f * (float)rect->width;
 
         for(int y = rect->y_min ; y < rect->y_max ; y++)
         {
-            float y_f = ((float)y - half_height + 0.5) * (cam->tan_v_half_opening_angle / half_height);
+            float y_f = ((float)y - half_height + 0.5f) * (cam->tan_v_half_opening_angle / half_height);
 
             for(int x = rect->x_min ; x < rect->x_max ; x++)
             {
-                float x_f = ((float)x - half_width + 0.5) * (cam->tan_h_half_opening_angle / half_width);
+                float x_f = ((float)x - half_width + 0.5f) * (cam->tan_h_half_opening_angle / half_width);
 
-                owl_v3f32 dir_vect = owl_v3f32_set(x_f, y_f, -1.0);
+                owl_v3f32 dir_vect = owl_v3f32_set(x_f, y_f, -1.0f);
                 float t;
                 owl_v3f32 normal;
                 if(wf3d_quadratic_curve_NearestIntersectionWithRay(curve, v_pos, q_rot, owl_v3f32_zero(), dir_vect, cam->near_clipping_distance, INFINITY, &t, &normal))

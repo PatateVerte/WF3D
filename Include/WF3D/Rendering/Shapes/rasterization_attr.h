@@ -20,7 +20,7 @@ typedef struct
     //Custom argument for callback
     void const* callback_arg;
 
-    void (*callback_fct)(wf3d_rasterization_rectangle const* rect, int x, int y, void const* callback_arg, owl_v3f32 v_intersection, owl_v3f32 normal);
+    void (OWL_VECTORCALL *callback_fct)(wf3d_rasterization_rectangle const* rect, int x, int y, void const* callback_arg, owl_v3f32 v_intersection, owl_v3f32 normal);
 
 } wf3d_rasterization_callback;
 

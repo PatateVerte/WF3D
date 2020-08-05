@@ -46,7 +46,7 @@ wf3d_triangle3d* wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d co
 //
 //
 //
-wf3d_triangle3d* wf3d_triangle3d_Transform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v, owl_q32 q_rot)
+wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Transform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v, owl_q32 q_rot)
 {
     for(unsigned int vi = 0 ; vi < 3 ; vi++)
     {
@@ -65,7 +65,7 @@ wf3d_triangle3d* wf3d_triangle3d_Transform(wf3d_triangle3d* t_dst, wf3d_triangle
 //Optional parameters (modified only if an intersection has been found) :
 //t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
 //normal_ret to return the normal of the intersection
-bool wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
+bool OWL_VECTORCALL wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
 {
     bool intersection_found = false;
 
@@ -89,7 +89,7 @@ bool wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle,
                                         owl_v3f32_sub(triangle->vertex_list[k2], triangle->vertex_list[k1]),
                                         triangle->normal
                                      );
-            same_sign = (det[k] * det[k2] >= 0.0);
+            same_sign = (det[k] * det[k2] >= 0.0f);
         }
 
         if(same_sign)
@@ -111,8 +111,8 @@ bool wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle,
     return intersection_found;
 }
 
+//Clipping of a triangle
 //triangle_ret_list[2], clipped_callback[2], clipped_callback_arg_buff[2]
-//
 //
 unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_triangle3d const* triangle, wf3d_camera3d const* cam)
 {
@@ -172,7 +172,7 @@ unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_tr
             float const t = (vertex_coords[vi_clipped][2] + cam->near_clipping_distance) / (vertex_coords[vi_clipped][2] - vertex_coords[vi][2]);
             owl_v3f32 clipped_vertex = owl_v3f32_add(
                                                         owl_v3f32_scalar_mul(triangle->vertex_list[vi], t),
-                                                        owl_v3f32_scalar_mul(triangle->vertex_list[vi_clipped], 1.0 - t)
+                                                        owl_v3f32_scalar_mul(triangle->vertex_list[vi_clipped], 1.0f - t)
                                                      );
             clipped_vertex = owl_v3f32_unsafe_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
 
@@ -213,7 +213,7 @@ unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_tr
                 float const t = - (vertex_coords[vi_unclipped][2] + cam->near_clipping_distance) / (vertex_coords[vi][2] - vertex_coords[vi_unclipped][2]);
                 owl_v3f32 clipped_vertex = owl_v3f32_add(
                                                                 owl_v3f32_scalar_mul(triangle->vertex_list[vi], t),
-                                                                owl_v3f32_scalar_mul(triangle->vertex_list[vi_unclipped], 1.0 - t)
+                                                                owl_v3f32_scalar_mul(triangle->vertex_list[vi_unclipped], 1.0f - t)
                                                             );
                 clipped_triangle[0].vertex_list[vi] = owl_v3f32_unsafe_set_component(clipped_vertex, 2, -cam->near_clipping_distance);
             }
@@ -235,13 +235,13 @@ unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_tr
 //
 void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle, wf3d_rasterization_rectangle const* rect, wf3d_rasterization_callback const* callback, wf3d_camera3d const* cam)
 {
-    float half_width = 0.5 * (float)rect->width;
-    float half_height = 0.5 * (float)rect->height;
+    float half_width = 0.5f * (float)rect->width;
+    float half_height = 0.5f * (float)rect->height;
 
     float const x_scale = half_width / cam->tan_h_half_opening_angle;
     float const y_scale = half_height / cam->tan_v_half_opening_angle;
-    float const inv_x_scale = 1.0 / x_scale;
-    float const inv_y_scale = 1.0 / y_scale;
+    float const inv_x_scale = 1.0f / x_scale;
+    float const inv_y_scale = 1.0f / y_scale;
 
     owl_v3f32 rel_vertex[3];
     float vertex_coords[3][4] OWL_ALIGN16;
@@ -258,7 +258,7 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
     {
         for(unsigned int vi = 0 ; vi < 3 && blackface_result ; vi++)
         {
-            blackface_result = owl_v3f32_dot(rel_vertex[vi], triangle->normal) < 0.0;
+            blackface_result = owl_v3f32_dot(rel_vertex[vi], triangle->normal) < 0.0f;
         }
     }
 
@@ -266,10 +266,10 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
     {
         float screen_coords[3][2];
 
-        float x_gen_min_f = 2.0 * half_width;
-        float x_gen_max_f = 0.0;
-        float y_min_f = 2.0 * half_height;
-        float y_max_f = 0.0;
+        float x_gen_min_f = 2.0f * half_width;
+        float x_gen_max_f = 0.0f;
+        float y_min_f = 2.0f * half_height;
+        float y_max_f = 0.0f;
 
         for(int i = 0 ; i < 3 ; i++)
         {
@@ -283,14 +283,14 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
             y_max_f = fmaxf(y_max_f, screen_coords[i][1]);
         }
 
-        if(x_gen_min_f < 2.0 * half_width && x_gen_max_f >= 0.0)
+        if(x_gen_min_f < 2.0f * half_width && x_gen_max_f >= 0.0f)
         {
-            int y_min = (int)roundf(fmaxf(y_min_f, 0.0));
+            int y_min = (int)(roundf(fmaxf(y_min_f, 0.0f)));
             if(y_min < rect->y_min)
             {
                 y_min = rect->y_min;
             }
-            int y_max = (int)roundf(fminf(y_max_f, 2.0f * half_height));
+            int y_max = (int)(roundf(fminf(y_max_f, 2.0f * half_height)));
             if(y_max > rect->y_max)
             {
                 y_max = rect->y_max;
@@ -302,12 +302,12 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
                 float y_f = 0.5f + (float)y;
 
                 float x_min_f = 2.0f * half_width;
-                float x_max_f = 0.0;
+                float x_max_f = 0.0f;
                 for(unsigned int i0 = 0 ; i0 < 3 ; i0++)
                 {
                     unsigned int i1 = (i0 + 1) % 3;
                     float t = (y_f - screen_coords[i1][1]) / (screen_coords[i0][1] - screen_coords[i1][1]);
-                    if(0.0 <= t && t <= 1.0f)
+                    if(0.0f <= t && t <= 1.0f)
                     {
                         float a = t;
                         float b = 1.0f - t;
@@ -318,12 +318,12 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
                     }
                 }
 
-                int x_min = (int)roundf(fmaxf(x_min_f, 0.0));
+                int x_min = (int)(roundf(fmaxf(x_min_f, 0.0f)));
                 if(x_min < rect->x_min)
                 {
                     x_min = rect->x_min;
                 }
-                int x_max = (int)roundf(fminf(x_max_f, 2.0f * half_width));
+                int x_max = (int)(roundf(fminf(x_max_f, 2.0f * half_width)));
                 if(x_max > rect->x_max)
                 {
                     x_max = rect->x_max;
@@ -338,7 +338,7 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
                         owl_v3f32 dir_vect = owl_v3f32_set(
                                                             (x_f - half_width) * inv_x_scale,
                                                             (y_f - half_height) * inv_y_scale,
-                                                            -1.0
+                                                            -1.0f
                                                            );
 
                         float const t = owl_v3f32_dot(rel_vertex[0], triangle->normal) / owl_v3f32_dot(dir_vect, triangle->normal);
@@ -355,7 +355,7 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
 //Rasterization of a triangle
 //
 //
-void wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+void OWL_VECTORCALL wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     wf3d_triangle3d transformed_triangle;
     wf3d_triangle3d_Transform(&transformed_triangle, triangle, v_pos, q_rot);

@@ -55,8 +55,8 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_
 //Optional parameters (modified only if an intersection has been found) :
 //t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
 //normal_ret to return the normal of the intersection
-bool wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret);
+bool OWL_VECTORCALL wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret);
 
-void wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
+void OWL_VECTORCALL wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam);
 
 #endif // WF3D_QUADRATIC_CURVE_H_INCLUDED
