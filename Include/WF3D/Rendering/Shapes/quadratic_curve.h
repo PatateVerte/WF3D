@@ -14,7 +14,7 @@
 #include <WF3D/Rendering/Shapes/rasterization_attr.h>
 #include <WF3D/Rendering/Shapes/triangle3d.h>
 
-typedef struct
+typedef struct OWL_ALIGN16
 {
     //The product * of 2 vectors means the product component by component
     //For example (x y z) * (x_ y_ z_) = (x*x_ y*y_ z*z_)
@@ -45,7 +45,7 @@ typedef struct
         with h=(x y z) the coordinates of a point expressed in the eigenbasis
     */
 
-} wf3d_quadratic_curve OWL_ALIGN16;
+} wf3d_quadratic_curve;
 
 //Set up of a quadratic curve
 wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha);

@@ -65,11 +65,9 @@ bool OWL_VECTORCALL wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadrat
         if(Delta >= 0.0f)
         {
             float sqrt_Delta = sqrtf(Delta);
-            float t[2] =
-            {
-                (-b + sqrt_Delta) / (2.0f * a),
-                (-b - sqrt_Delta) / (2.0f * a)
-            };
+            float t[2];
+            t[0] = (-b + sqrt_Delta) / (2.0f * a);
+            t[1] = (-b - sqrt_Delta) / (2.0f * a);
 
             for(unsigned i = 0 ; i < 2 ; i++)
             {

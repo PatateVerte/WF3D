@@ -20,8 +20,8 @@ wf3d_triangle3d* wf3d_triangle3d_Set(wf3d_triangle3d* triangle, owl_v3f32* verte
 //
 wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle)
 {
-    owl_v3f32 v1 = triangle->vertex_list[1] - triangle->vertex_list[0];
-    owl_v3f32 v2 = triangle->vertex_list[2] - triangle->vertex_list[0];
+    owl_v3f32 v1 = owl_v3f32_sub(triangle->vertex_list[1], triangle->vertex_list[0]);
+    owl_v3f32 v2 = owl_v3f32_sub(triangle->vertex_list[2], triangle->vertex_list[0]);
 
     triangle->normal = owl_v3f32_normalize(owl_v3f32_cross(v1, v2));
 
@@ -31,7 +31,7 @@ wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle)
 //
 //
 //
-wf3d_triangle3d* wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v)
+wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v)
 {
     for(int i = 0 ; i < 3 ; i++)
     {
@@ -116,7 +116,7 @@ bool OWL_VECTORCALL wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d c
 //
 unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_triangle3d const* triangle, wf3d_camera3d const* cam)
 {
-    float vertex_coords[3][4] OWL_ALIGN16;
+    float OWL_ALIGN16 vertex_coords[3][4];
 
     //Clipping detection
     unsigned int nb_vertices_behind = 0;
@@ -244,7 +244,7 @@ void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle,
     float const inv_y_scale = 1.0f / y_scale;
 
     owl_v3f32 rel_vertex[3];
-    float vertex_coords[3][4] OWL_ALIGN16;
+    float OWL_ALIGN16 vertex_coords[3][4];
 
     for(unsigned int vi = 0 ; vi < 3 ; vi++)
     {

@@ -18,14 +18,19 @@
 //
 typedef struct
 {
-    float rgb[4] OWL_ALIGN16;
+    float OWL_ALIGN16 rgb[4];
 
 } wf3d_color;
 
 //
 static inline wf3d_color wf3d_color_set(float r, float g, float b)
 {
-    return (wf3d_color){.rgb = {r, g, b, 0.0}};
+    wf3d_color ret;
+    ret.rgb[0] = r;
+    ret.rgb[1] = g;
+    ret.rgb[2] = b;
+    ret.rgb[3] = 0.0;
+    return ret;
 }
 
 //
@@ -160,7 +165,9 @@ typedef struct
 
 static inline wf3d_color_f16 wf3d_color_f16_set(float r, float g, float b)
 {
-    return (wf3d_color_f16){ .data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_set_ps(0.0, b, g, r), 0)) };
+    wf3d_color_f16 ret;
+    ret.data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_set_ps(0.0, b, g, r), 0));
+    return ret;
 }
 
 static inline wf3d_color_f16 wf3d_color_f16_from_color(wf3d_color color)
