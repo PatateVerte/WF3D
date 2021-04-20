@@ -3,6 +3,7 @@
 
 #include <WF3D/Rendering/camera3d.h>
 
+//Rasterization [x_min, x_max[ x [y_min, y_max[
 typedef struct
 {
     int width;

@@ -25,7 +25,7 @@ typedef struct
 
     //Relative Refractive index = n1 / n2
     //Where n1 is the refractive index in the direction where the normal points to
-    //Where n2 is the refractive index in the direction behind where the normal points to
+    //Where n2 is the refractive index in the direction behind the normal
     float rel_refractive_index;
 
     wf3d_shading_model shading_model;
