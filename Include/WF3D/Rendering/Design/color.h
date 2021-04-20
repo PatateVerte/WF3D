@@ -172,7 +172,9 @@ static inline wf3d_color_f16 wf3d_color_f16_set(float r, float g, float b)
 
 static inline wf3d_color_f16 wf3d_color_f16_from_color(wf3d_color color)
 {
-    return (wf3d_color_f16){ .data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_loadu_ps(color.rgb), 0)) };
+    wf3d_color_f16 ret;
+    ret.data = _mm_cvtsi128_si64(_mm_cvtps_ph(_mm_loadu_ps(color.rgb), 0));
+    return ret;
 }
 
 static inline wf3d_color wf3d_color_from_color_f16(wf3d_color_f16 color16)
