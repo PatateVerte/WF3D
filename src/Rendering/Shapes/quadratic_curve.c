@@ -5,7 +5,7 @@
 //Set up  quadratic curve
 //
 //
-wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha)
+OWL_DLL_EXPORT wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_q32 q_eigenbasis, owl_v3f32 norminf_filter, owl_v3f32 norm2_filter, float c, owl_v3f32 a, owl_v3f32 alpha)
 {
     curve->q_eigenbasis = q_eigenbasis;
 
@@ -25,7 +25,7 @@ wf3d_quadratic_curve* wf3d_quadratic_curve_set(wf3d_quadratic_curve* curve, owl_
 //t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
 //normal_ret to return the normal of the intersection
 //surface_ret to return the surface of the intersection
-bool OWL_VECTORCALL wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
+OWL_DLL_EXPORT bool OWL_VECTORCALL wf3d_quadratic_curve_NearestIntersectionWithRay(wf3d_quadratic_curve const* curve, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
 {
     bool intersection_exists = false;
     float t_found = INFINITY;
@@ -163,7 +163,7 @@ static void OWL_VECTORCALL wf3d_rasterization_triangle3d_callback(wf3d_rasteriza
 //
 //
 //
-void OWL_VECTORCALL wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+OWL_DLL_EXPORT void OWL_VECTORCALL wf3d_quadratic_curve_Rasterization(wf3d_quadratic_curve const* curve, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     owl_v3f32 inv_vect_eigenbasis = owl_v3f32_comp_div(owl_v3f32_broadcast(1.0f), curve->norminf_filter);
     bool optimized_rasterization = (isfinite(owl_v3f32_norm(inv_vect_eigenbasis)) != 0.0f);

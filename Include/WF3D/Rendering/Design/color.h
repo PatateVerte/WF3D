@@ -40,7 +40,7 @@ static inline wf3d_color wf3d_color_black()
 }
 
 //
-bool wf3d_color_isblack(wf3d_color color);
+OWL_DLL_EXPORT bool wf3d_color_isblack(wf3d_color color);
 
 //
 static inline wf3d_color wf3d_color_scalar_mul(wf3d_color color, float f)
