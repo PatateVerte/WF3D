@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include <OWL/owl.h>
+#include <WF3D/wf3d.h>
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
@@ -40,7 +41,7 @@ static inline wf3d_color wf3d_color_black()
 }
 
 //
-OWL_DLL_EXPORT bool wf3d_color_isblack(wf3d_color color);
+WF3D_DLL_EXPORT bool wf3d_color_isblack(wf3d_color color);
 
 //
 static inline wf3d_color wf3d_color_scalar_mul(wf3d_color color, float f)

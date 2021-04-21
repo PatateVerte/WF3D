@@ -1,6 +1,6 @@
 #include <WF3D/Rendering/Design/color.h>
 
-OWL_DLL_EXPORT bool wf3d_color_isblack(wf3d_color color)
+WF3D_DLL_EXPORT bool wf3d_color_isblack(wf3d_color color)
 {
     __m128 color_vec = _mm_loadu_ps(color.rgb);
 

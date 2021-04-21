@@ -3,7 +3,7 @@
 //
 //
 //
-OWL_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_Set(wf3d_triangle3d* triangle, owl_v3f32* vertex_list, owl_v3f32 normal)
+WF3D_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_Set(wf3d_triangle3d* triangle, owl_v3f32* vertex_list, owl_v3f32 normal)
 {
     for(unsigned int vi = 0 ; vi < 3 ; vi++)
     {
@@ -18,7 +18,7 @@ OWL_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_Set(wf3d_triangle3d* triangle, o
 //
 //
 //
-OWL_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle)
+WF3D_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* triangle)
 {
     owl_v3f32 v1 = owl_v3f32_sub(triangle->vertex_list[1], triangle->vertex_list[0]);
     owl_v3f32 v2 = owl_v3f32_sub(triangle->vertex_list[2], triangle->vertex_list[0]);
@@ -31,7 +31,7 @@ OWL_DLL_EXPORT wf3d_triangle3d* wf3d_triangle3d_ComputeNormal(wf3d_triangle3d* t
 //
 //
 //
-OWL_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v)
+WF3D_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Move(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v)
 {
     for(int i = 0 ; i < 3 ; i++)
     {
@@ -46,7 +46,7 @@ OWL_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Move(wf3d_triangl
 //
 //
 //
-OWL_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Transform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v, owl_q32 q_rot)
+WF3D_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Transform(wf3d_triangle3d* t_dst, wf3d_triangle3d const* t_src, owl_v3f32 v, owl_q32 q_rot)
 {
     for(unsigned int vi = 0 ; vi < 3 ; vi++)
     {
@@ -65,7 +65,7 @@ OWL_DLL_EXPORT wf3d_triangle3d* OWL_VECTORCALL wf3d_triangle3d_Transform(wf3d_tr
 //Optional parameters (modified only if an intersection has been found) :
 //t to return the parameter for the nearest intersection (v_intersection = ray_origin + t*ray_dir)
 //normal_ret to return the normal of the intersection
-OWL_DLL_EXPORT bool OWL_VECTORCALL wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
+WF3D_DLL_EXPORT bool OWL_VECTORCALL wf3d_triangle3d_NearestIntersectionWithRay(wf3d_triangle3d const* triangle, owl_v3f32 v_pos, owl_q32 q_rot, owl_v3f32 ray_origin, owl_v3f32 ray_dir, float t_min, float t_max, float* t_ret, owl_v3f32* normal_ret)
 {
     bool intersection_found = false;
 
@@ -114,7 +114,7 @@ OWL_DLL_EXPORT bool OWL_VECTORCALL wf3d_triangle3d_NearestIntersectionWithRay(wf
 //Clipping of a triangle
 //triangle_ret_list[2], clipped_callback[2], clipped_callback_arg_buff[2]
 //
-OWL_DLL_EXPORT unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_triangle3d const* triangle, wf3d_camera3d const* cam)
+WF3D_DLL_EXPORT unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_triangle, wf3d_triangle3d const* triangle, wf3d_camera3d const* cam)
 {
     float OWL_ALIGN16 vertex_coords[3][4];
 
@@ -233,7 +233,7 @@ OWL_DLL_EXPORT unsigned int wf3d_triangle3d_Clipping(wf3d_triangle3d* clipped_tr
 //Rasterization with custom callback function
 //
 //
-OWL_DLL_EXPORT void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle, wf3d_rasterization_rectangle const* rect, wf3d_rasterization_callback const* callback, wf3d_camera3d const* cam)
+WF3D_DLL_EXPORT void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d const* triangle, wf3d_rasterization_rectangle const* rect, wf3d_rasterization_callback const* callback, wf3d_camera3d const* cam)
 {
     float half_width = 0.5f * (float)rect->width;
     float half_height = 0.5f * (float)rect->height;
@@ -355,7 +355,7 @@ OWL_DLL_EXPORT void wf3d_triangle3d_RasterizationAfterClipping(wf3d_triangle3d c
 //Rasterization of a triangle
 //
 //
-OWL_DLL_EXPORT void OWL_VECTORCALL wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
+WF3D_DLL_EXPORT void OWL_VECTORCALL wf3d_triangle3d_Rasterization(wf3d_triangle3d const* triangle, wf3d_rasterization_callback const* callback, wf3d_rasterization_rectangle const* rect, owl_v3f32 v_pos, owl_q32 q_rot, wf3d_camera3d const* cam)
 {
     wf3d_triangle3d transformed_triangle;
     wf3d_triangle3d_Transform(&transformed_triangle, triangle, v_pos, q_rot);
