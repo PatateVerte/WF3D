@@ -1,6 +1,8 @@
 #ifndef WF3D_TRIANGLE_H_INCLUDED
 #define WF3D_TRIANGLE_H_INCLUDED
 
+#include <WF3D/wf3d.h>
+
 #include <OWL/Optimized3d/vector/v3f32.h>
 #include <OWL/Optimized3d/quaternion/q32.h>
 

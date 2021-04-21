@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <OWL/owl.h>
 #include <WF3D/wf3d.h>
 
 #include <xmmintrin.h>

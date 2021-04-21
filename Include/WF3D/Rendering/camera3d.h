@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 
-#include <OWL/owl.h>
 #include <WF3D/wf3d.h>
 
 typedef struct
